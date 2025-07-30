@@ -74,21 +74,8 @@
                         <small class="form-help">Helps us provide relevant safety information</small>
                     </div>
                     
-                    <div class="form-group checkbox-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="terms" name="terms" required>
-                            <span class="checkmark"></span>
-                            I agree to the <a href="#" onclick="showTerms()">Terms of Service</a> and <a href="#" onclick="showPrivacy()">Privacy Policy</a> *
-                        </label>
-                    </div>
+                  
                     
-                    <div class="form-group checkbox-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="newsletter" name="newsletter">
-                            <span class="checkmark"></span>
-                            Subscribe to safety alerts and community updates
-                        </label>
-                    </div>
                     
                     <button type="submit" id="signup-btn" class="btn btn-primary auth-btn">
                         🚀 Create Account
@@ -99,16 +86,7 @@
                     <p>Already have an account? <a href="login.html">Sign in here</a></p>
                 </div>
                 
-                <div class="social-login">
-                    <p>Or sign up with:</p>
-                    <div class="social-buttons">
-                        <button class="btn social-btn google-btn" onclick="signUpWithGoogle()">
-                            📧 Google
-                        </button>
-                        <button class="btn social-btn facebook-btn" onclick="signUpWithFacebook()">
-                            📘 Facebook
-                        </button>
-                    </div>
+                
                 </div>
             </div>
         </div>
@@ -118,30 +96,7 @@
         </div>
     </div>
 
-    <!-- Terms and Privacy Modals -->
-    <div id="terms-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('terms-modal')">&times;</span>
-            <h2>Terms of Service</h2>
-            <div class="modal-body">
-                <p><strong>SafeCity Terms of Service</strong></p>
-                <p>By using SafeCity, you agree to these terms...</p>
-                <!-- Add your actual terms here -->
-            </div>
-        </div>
-    </div>
-    
-    <div id="privacy-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('privacy-modal')">&times;</span>
-            <h2>Privacy Policy</h2>
-            <div class="modal-body">
-                <p><strong>SafeCity Privacy Policy</strong></p>
-                <p>We respect your privacy and are committed to protecting your personal data...</p>
-                <!-- Add your actual privacy policy here -->
-            </div>
-        </div>
-    </div>
+   
 
     <script src="js/auth.js"></script>
     <script>
