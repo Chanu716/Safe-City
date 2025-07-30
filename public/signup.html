@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - SafeCity</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="signup.html">Sign Up</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-form">
+                <h1>📝 Join SafeCity</h1>
+                <p>Create your account to help build a safer community together.</p>
+                
+                <div id="auth-status"></div>
+                
+                <form id="signup-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required placeholder="Enter your first name">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required placeholder="Enter your last name">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                        <small class="form-help">We'll send account verification to this email</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number (Optional)</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+                        <small class="form-help">For emergency alerts (optional)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required placeholder="Create a strong password" minlength="8">
+                        <div class="password-toggle" onclick="togglePassword('password')">👁️</div>
+                        <div class="password-strength" id="password-strength"></div>
+                        <small class="form-help">Password must be at least 8 characters long</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm your password">
+                        <div class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</div>
+                        <div id="password-match" class="password-match"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Primary Location (Optional)</label>
+                        <input type="text" id="location" name="location" placeholder="City, State/Province">
+                        <small class="form-help">Helps us provide relevant safety information</small>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#" onclick="showTerms()">Terms of Service</a> and <a href="#" onclick="showPrivacy()">Privacy Policy</a> *
+                        </label>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="newsletter" name="newsletter">
+                            <span class="checkmark"></span>
+                            Subscribe to safety alerts and community updates
+                        </label>
+                    </div>
+                    
+                    <button type="submit" id="signup-btn" class="btn btn-primary auth-btn">
+                        🚀 Create Account
+                    </button>
+                </form>
+                
+                <div class="auth-links">
+                    <p>Already have an account? <a href="login.html">Sign in here</a></p>
+                </div>
+                
+                <div class="social-login">
+                    <p>Or sign up with:</p>
+                    <div class="social-buttons">
+                        <button class="btn social-btn google-btn" onclick="signUpWithGoogle()">
+                            📧 Google
+                        </button>
+                        <button class="btn social-btn facebook-btn" onclick="signUpWithFacebook()">
+                            📘 Facebook
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+       
+            
+        </div>
+    </div>
+
+    <!-- Terms and Privacy Modals -->
+    <div id="terms-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('terms-modal')">&times;</span>
+            <h2>Terms of Service</h2>
+            <div class="modal-body">
+                <p><strong>SafeCity Terms of Service</strong></p>
+                <p>By using SafeCity, you agree to these terms...</p>
+                <!-- Add your actual terms here -->
+            </div>
+        </div>
+    </div>
+    
+    <div id="privacy-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('privacy-modal')">&times;</span>
+            <h2>Privacy Policy</h2>
+            <div class="modal-body">
+                <p><strong>SafeCity Privacy Policy</strong></p>
+                <p>We respect your privacy and are committed to protecting your personal data...</p>
+                <!-- Add your actual privacy policy here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Initialize signup page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            if (isLoggedIn()) {
+                window.location.href = 'dashboard.html';
+            }
+            
+            // Password strength checker
+            document.getElementById('password').addEventListener('input', checkPasswordStrength);
+            document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+        });
+    </script>
+</body>
+</html>
