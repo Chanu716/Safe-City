@@ -14,10 +14,18 @@ const authRoutes = require('./routes/auth');
 
 // Middleware
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'https://safe-city-tau.vercel.app'
-    ],
+    origin: function (origin, callback) {
+        // Allow localhost for development
+        if (!origin || origin.startsWith('http://localhost')) {
+            return callback(null, true);
+        }
+        // Allow any Vercel subdomain
+        if (/^https:\/\/([a-zA-Z0-9-]+)\.vercel\.app$/.test(origin)) {
+            return callback(null, true);
+        }
+        // Block other origins
+        callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
 
