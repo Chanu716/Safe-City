@@ -96,10 +96,7 @@ app.get('/api/health', (req, res) => {
 
 // Endpoint to provide Google API key to frontend
 app.get('/api/google-api-key', (req, res) => {
-    // In production, restrict access and do not expose sensitive keys directly
-    res.json({
-        apiKey: process.env.GOOGLE_MAPS_API_KEY || ''
-    });
+    res.json({ apiKey: process.env.GOOGLE_MAPS_API_KEY });
 });
 
 // API documentation endpoint
