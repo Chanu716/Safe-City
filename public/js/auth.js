@@ -282,11 +282,6 @@ function validateSignupForm(data) {
         return false;
     }
     
-    // Terms agreement
-    if (!data.terms) {
-        showAlert('You must agree to the Terms of Service.', 'danger');
-        return false;
-    }
     
     return true;
 }
@@ -300,22 +295,6 @@ function validateLoginForm(data) {
     return true;
 }
 
-// Social login functions
-function signInWithGoogle() {
-    showAlert('Google sign-in integration coming soon!', 'warning');
-}
-
-function signUpWithGoogle() {
-    showAlert('Google sign-up integration coming soon!', 'warning');
-}
-
-function signInWithFacebook() {
-    showAlert('Facebook sign-in integration coming soon!', 'warning');
-}
-
-function signUpWithFacebook() {
-    showAlert('Facebook sign-up integration coming soon!', 'warning');
-}
 
 // Forgot password
 function forgotPassword() {
@@ -329,18 +308,6 @@ function forgotPassword() {
     showAlert('Password reset link has been sent to your email.', 'success');
 }
 
-// Modal functions
-function showTerms() {
-    document.getElementById('terms-modal').style.display = 'block';
-}
-
-function showPrivacy() {
-    document.getElementById('privacy-modal').style.display = 'block';
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
 
 // Utility functions
 function showAlert(message, type) {
