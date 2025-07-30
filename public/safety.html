@@ -134,7 +134,25 @@
     <script src="js/auth.js"></script>
     <script src="js/safety.js"></script>
     <!-- Google Maps JavaScript API -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY&callback=initMap"></script>
+    <script>
+  fetch('https://safe-city-8gxz.onrender.com/api/google-api-key')
+    .then(response => response.json())
+    .then(data => {
+      if (data.apiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+      } else {
+        console.error("❌ API key missing in response.");
+      }
+    })
+    .catch(err => {
+      console.error("❌ Failed to load Google Maps API:", err);
+    });
+</script>
+
     <script>
         // Fallback if Google Maps fails to load
         window.addEventListener('error', function(e) {
