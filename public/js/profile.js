@@ -3,7 +3,7 @@
 // Load user profile data
 window.loadUserProfile = async function() {
     try {
-        const response = await authenticatedFetch('/api/auth/me');
+        const response = await authenticatedFetch('/api/auth/me'); // Will be prefixed automatically
         
         if (response.ok) {
             const data = await response.json();

@@ -43,7 +43,7 @@ async function signUp(userData) {
     try {
         showLoading('signup-btn', 'Creating Account...');
         
-        const response = await fetch('/api/auth/signup', {
+        const response = await fetch('https://safe-city-8gxz.onrender.com/api/auth/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ async function login(credentials) {
     try {
         showLoading('login-btn', 'Signing In...');
         
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('https://safe-city-8gxz.onrender.com/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -123,7 +123,7 @@ async function logout() {
     try {
         // Call backend logout endpoint
         if (authToken) {
-            await fetch('/api/auth/logout', {
+            await fetch('https://safe-city-8gxz.onrender.com/api/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -384,7 +384,10 @@ async function authenticatedFetch(url, options = {}) {
         };
     }
     
-    const response = await fetch(url, options);
+    // If relative API path, prefix with backend URL
+    const apiPrefix = 'https://safe-city-8gxz.onrender.com';
+    const fullUrl = url.startsWith('/api/') ? apiPrefix + url : url;
+    const response = await fetch(fullUrl, options);
     
     // Handle token expiration
     if (response.status === 401) {

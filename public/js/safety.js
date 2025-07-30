@@ -89,7 +89,7 @@ async function analyzeLocation(latLng) {
     
     try {
         // Fetch incidents near this location
-        const response = await fetch(`/api/incidents/nearby?lat=${location.lat}&lng=${location.lng}&radius=1000`);
+        const response = await fetch(`https://safe-city-8gxz.onrender.com/api/incidents/nearby?lat=${location.lat}&lng=${location.lng}&radius=1000`);
         const incidents = await response.json();
         
         // Calculate safety level

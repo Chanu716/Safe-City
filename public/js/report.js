@@ -134,7 +134,7 @@ async function submitReport(event) {
         submitBtn.disabled = true;
         
         // Send to backend
-        const response = await fetch('/api/incidents', {
+        const response = await fetch('https://safe-city-8gxz.onrender.com/api/incidents', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
