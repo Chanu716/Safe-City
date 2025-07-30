@@ -57,9 +57,11 @@ app.use((req, res, next) => {
 // MongoDB connection
 const connectDB = async () => {
     try {
-        // Directly use the provided MongoDB Atlas connection string
-        const mongoURI = 'mongodb+srv://charmiseera07:abcd1234@safe.4vwtcfb.mongodb.net/?retryWrites=true&w=majority&appName=Safe';
-        // For production, consider using environment variables for credentials
+        // Use MongoDB Atlas connection string from environment variable
+        const mongoURI = process.env.MONGODB_URI;
+        if (!mongoURI) {
+            throw new Error('MongoDB connection string not found in environment variables');
+        }
         await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -96,7 +98,7 @@ app.get('/api/health', (req, res) => {
 app.get('/api/google-api-key', (req, res) => {
     // In production, restrict access and do not expose sensitive keys directly
     res.json({
-        apiKey: 'AIzaSyC2xQm4wEp_G-7J5Nr3HEO58kMBy56BcWE'
+        apiKey: process.env.GOOGLE_MAPS_API_KEY || ''
     });
 });
 
