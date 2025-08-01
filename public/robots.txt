@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# SafeCity - Educational Community Safety Project
+# This is a legitimate educational website
+Sitemap: https://safe-city-tau.vercel.app/sitemap.xml
