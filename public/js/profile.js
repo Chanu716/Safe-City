@@ -171,46 +171,6 @@ window.checkPasswordMatchProfile = function() {
     }
 }
 
-// Confirm account deletion
-window.confirmDeleteAccount = function() {
-    document.getElementById('delete-modal').style.display = 'block';
-}
-
-// Delete account
-window.deleteAccount = async function() {
-    const confirmation = document.getElementById('deleteConfirmation').value;
-    
-    if (confirmation !== 'DELETE') {
-        showAlert('Please type "DELETE" to confirm account deletion.', 'warning');
-        return;
-    }
-    
-    try {
-        const response = await authenticatedFetch('/api/auth/delete-account', {
-            method: 'DELETE'
-        });
-        
-        if (response.ok) {
-            showAlert('Account deleted successfully. Redirecting...', 'success');
-            
-            // Clear authentication data
-            clearAuthData();
-            
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 2000);
-            
-        } else {
-            const data = await response.json();
-            throw new Error(data.error || 'Failed to delete account');
-        }
-        
-    } catch (error) {
-        console.error('Error deleting account:', error);
-        showAlert(error.message, 'danger');
-    }
-}
-
 // Form submission handlers
 document.addEventListener('DOMContentLoaded', function() {
     // Profile form handler

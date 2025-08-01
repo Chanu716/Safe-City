@@ -8,6 +8,11 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body>
+    <!-- Educational Notice Banner -->
+    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
+        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This is a student demonstration website. No real login credentials are required or stored.
+    </div>
+    
     <header>
         <div class="header-content">
             <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
@@ -56,19 +61,6 @@
                 
                 <div class="auth-links">
                     <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
-                    <p><a href="#" onclick="forgotPassword()">Forgot your password?</a></p>
-                </div>
-                
-                <div class="social-login">
-                    <p>Or sign in with:</p>
-                    <div class="social-buttons">
-                        <button class="btn social-btn google-btn" onclick="signInWithGoogle()">
-                            📧 Google
-                        </button>
-                        <button class="btn social-btn facebook-btn" onclick="signInWithFacebook()">
-                            📘 Facebook
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -91,6 +83,11 @@
             </div>
         </div>
     </div>
+
+    <footer style="text-align:center; font-size:0.9em; margin-top:2rem; color:#333; background:#f8f9fa; padding:20px; border-radius:8px;">
+        <p><strong>⚠️ EDUCATIONAL DEMONSTRATION WEBSITE</strong></p>
+        <p>This is a student project for educational purposes only. No real authentication or data processing occurs.</p>
+    </footer>
 
     <script src="js/auth.js"></script>
     <script>

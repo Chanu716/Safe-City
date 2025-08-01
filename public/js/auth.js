@@ -296,19 +296,6 @@ function validateLoginForm(data) {
 }
 
 
-// Forgot password
-function forgotPassword() {
-    const email = document.getElementById('email').value;
-    
-    if (!email) {
-        showAlert('Please enter your email address first.', 'warning');
-        return;
-    }
-    
-    showAlert('Password reset link has been sent to your email.', 'success');
-}
-
-
 // Utility functions
 function showAlert(message, type) {
     const statusDiv = document.getElementById('auth-status');
