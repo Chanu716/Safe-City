@@ -113,20 +113,25 @@
     <!-- The API key should be injected server-side from .env -->
     <!-- Example (Node.js/Express): -->
    <!-- Google Maps API key is now loaded dynamically from the backend. -->
-   <script>
-   // Fetch Google Maps API key from backend and load Maps script
-   fetch('/api/google-api-key')
-     .then(res => res.json())
-     .then(data => {
-       if (data.apiKey) {
-         const script = document.createElement('script');
-         script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap`;
-         script.async = true;
-         script.defer = true;
-         document.body.appendChild(script);
-       }
-     });
-   </script>
+  <script>
+  fetch('https://safe-city-8gxz.onrender.com/api/google-api-key')
+    .then(response => response.json())
+    .then(data => {
+      if (data.apiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+      } else {
+        console.error("❌ API key missing in response.");
+      }
+    })
+    .catch(err => {
+      console.error("❌ Failed to load Google Maps API:", err);
+    });
+</script>
+
     <script>
         // Fallback if Google Maps fails to load
         window.addEventListener('error', function(e) {

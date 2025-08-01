@@ -74,9 +74,6 @@
                         <small class="form-help">Helps us provide relevant safety information</small>
                     </div>
                     
-                  
-                    
-                    
                     <button type="submit" id="signup-btn" class="btn btn-primary auth-btn">
                         🚀 Create Account
                     </button>
@@ -88,29 +85,20 @@
                 <div class="auth-links">
                     <p>Already have an account? <a href="login.html">Sign in here</a></p>
                 </div>
-                
-                
-                </div>
             </div>
-        </div>
-        
-       
-            
         </div>
     </div>
 
-   
+    <footer style="text-align:center; font-size:0.85em; margin-top:2rem; color:#888;">
+        <p>⚠️ This is a student project built for demonstration only. No sensitive data is collected or shared.</p>
+    </footer>
 
     <script src="js/auth.js"></script>
     <script>
-        // Initialize signup page
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is already logged in
             if (isLoggedIn()) {
                 window.location.href = 'dashboard.html';
             }
-            
-            // Password strength checker
             document.getElementById('password').addEventListener('input', checkPasswordStrength);
             document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
         });
