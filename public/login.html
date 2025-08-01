@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SafeCity</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Educational Notice Banner -->
+    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
+        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This is a student demonstration website. No real login credentials are required or stored.
+    </div>
+    
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="signup.html">Sign Up</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-form">
+                <h1>🔐 Login to SafeCity</h1>
+                <p>Welcome back! Sign in to access your SafeCity account.</p>
+                
+                <div id="auth-status"></div>
+                
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required placeholder="Enter your password">
+                        <div class="password-toggle" onclick="togglePassword('password')">👁️</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="remember" name="remember">
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                    </div>
+                    
+                    <button type="submit" id="login-btn" class="btn btn-primary auth-btn">
+                        🔑 Sign In
+                    </button>
+                </form>
+                
+                <div class="auth-links">
+                    <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="auth-info">
+            <h2>Why Create an Account?</h2>
+            <div class="benefits-grid">
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">🔔</div>
+                    <h3>Custom Alerts</h3>
+                    <p>Set up personalized safety alerts for areas you care about most.</p>
+                </div>
+               
+                <div class="benefit-item">
+                    <div class="benefit-icon">🔒</div>
+                    <h3>Privacy Control</h3>
+                    <p>Manage your privacy settings and control what information you share.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align:center; font-size:0.9em; margin-top:2rem; color:#333; background:#f8f9fa; padding:20px; border-radius:8px;">
+        <p><strong>⚠️ EDUCATIONAL DEMONSTRATION WEBSITE</strong></p>
+        <p>This is a student project for educational purposes only. No real authentication or data processing occurs.</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Initialize login page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            if (isLoggedIn()) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Incident - SafeCity</title>
+    <link rel="stylesheet" href="css/style.css">
+   
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Educational Notice Banner -->
+    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
+        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This is a demonstration website. No real incident data is collected or processed.
+    </div>
+    
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links" id="navMenu">
+                    <!-- Navigation will be loaded dynamically based on authentication status -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="form-container">
+            <h1>🚨 Report an Incident</h1>
+            <p>Help keep your community safe by reporting incidents. Your report will help others stay informed about potential safety concerns.</p>
+            
+            <div id="location-status"></div>
+            
+            <form id="report-form">
+                <div class="form-group">
+                    <label for="title">Incident Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="Brief description of the incident">
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="Theft">Theft</option>
+                        <option value="Harassment">Harassment</option>
+                        <option value="Violence">Violence</option>
+                        <option value="Vandalism">Vandalism</option>
+                        <option value="Suspicious Activity">Suspicious Activity</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" required placeholder="Provide details about what happened, when it occurred, and any other relevant information..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Location Selection</label>
+                    <button type="button" id="location-btn" class="btn" onclick="useCurrentLocation()">📍 Use Current Location</button>
+                    <p style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">
+                        Click the button above to use your current location, or click on the map below to select a location.
+                    </p>
+                    <div id="selected-location" style="margin-top: 0.5rem; font-weight: bold; color: #667eea;"></div>
+                    
+                    <!-- Manual coordinate input (fallback when maps don't work) -->
+                    <div id="manual-location" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <p style="margin: 0 0 1rem 0; font-weight: bold;">Enter Location:</p>
+                        <input type="text" id="location-search" placeholder="Search for a location (e.g. New York, NY)" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        <button type="button" onclick="useManualLocation()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            📍 Use This Location
+                        </button>
+                    </div>
+                    <button type="button" onclick="toggleManualLocation()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        📝 Enter Location
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="map-container" style="position: relative;">
+            <div id="map"></div>
+        </div>
+        
+        <div class="form-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div id="timestamp-display" style="color: #666; font-size: 0.9rem;"></div>
+                    <p style="color: #666; font-size: 0.9rem; margin: 0.5rem 0 0 0;">
+                        * Required fields
+                    </p>
+                </div>
+                <button type="submit" form="report-form" id="submit-btn" class="btn btn-primary">
+                    🚨 Submit Report
+                </button>
+            </div>
+        </div>
+        
+        <div class="safety-info">
+            <h3>⚠️ Important Safety Reminders</h3>
+            <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
+                <li><strong>Emergency Situations:</strong> If you're in immediate danger, call local emergency services (911, 112, etc.) first.</li>
+                <li><strong>Privacy:</strong> Do not include personal identifying information in your report.</li>
+                <li><strong>Accuracy:</strong> Please provide accurate information to help your community stay safe.</li>
+                <li><strong>Follow-up:</strong> Contact local authorities if the situation requires official intervention.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/report.js"></script>
+    
+    <!-- Google Maps API loaded dynamically -->
+    <script>
+    // Fetch Google Maps API key from backend and load Maps script
+    fetch('https://safe-city-8gxz.onrender.com/api/google-api-key')
+      .then(response => response.json())
+      .then(data => {
+        if (data.apiKey) {
+          const script = document.createElement('script');
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap`;
+          script.async = true;
+          script.defer = true;
+          document.body.appendChild(script);
+        }
+      })
+      .catch(err => console.log('Maps API not available'));
+    </script>
+
+    <script>
+        // Fallback if Google Maps fails to load
+        window.addEventListener('error', function(e) {
+            if (e.filename && e.filename.includes('maps.googleapis.com')) {
+                document.getElementById('map').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f5f5f5; color: #666;">
+                        <div style="text-align: center;">
+                            <p><strong>Map Service Unavailable</strong></p>
+                            <p>Please use the "Use Current Location" button or manually enter coordinates.</p>
+                            <p style="font-size: 0.9rem;">To enable maps, add your Google Maps API key to the script tag.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

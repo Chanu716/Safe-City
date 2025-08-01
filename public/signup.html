@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - SafeCity</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Security Notice Banner -->
+    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
+        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This is a student demonstration website for community safety concepts. No real personal data is stored or processed. All forms are for educational purposes only.
+    </div>
+    
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="signup.html">Sign Up</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-form">
+                <h1>📝 Join SafeCity</h1>
+                <p>Create your account to help build a safer community together.</p>
+                
+                <div id="auth-status"></div>
+                
+                <form id="signup-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required placeholder="Enter your first name">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required placeholder="Enter your last name">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                        <small class="form-help">We'll send account verification to this email</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number (Optional)</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+                        <small class="form-help">For emergency alerts (optional)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required placeholder="Create a strong password" minlength="8">
+                        <div class="password-toggle" onclick="togglePassword('password')">👁️</div>
+                        <div class="password-strength" id="password-strength"></div>
+                        <small class="form-help">Password must be at least 8 characters long</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm your password">
+                        <div class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</div>
+                        <div id="password-match" class="password-match"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Primary Location (Optional)</label>
+                        <input type="text" id="location" name="location" placeholder="City, State/Province">
+                        <small class="form-help">Helps us provide relevant safety information</small>
+                    </div>
+                    
+                    <button type="submit" id="signup-btn" class="btn btn-primary auth-btn">
+                        🚀 Create Account
+                    </button>
+                    <div class="form-group">
+                        <small class="form-help" style="color: #007bff; font-weight: bold;">⚠️ EDUCATIONAL DEMO: This form is for demonstration purposes only. No real personal information is collected, stored, or processed.</small>
+                    </div>
+                </form>
+                
+                <div class="auth-links">
+                    <p>Already have an account? <a href="login.html">Sign in here</a></p>
+                    <p><a href="privacy.html">Privacy Policy</a> | <a href="security.html">Security Information</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align:center; font-size:0.9em; margin-top:2rem; color:#333; background:#f8f9fa; padding:20px; border-radius:8px;">
+        <p><strong>⚠️ EDUCATIONAL DEMONSTRATION WEBSITE</strong></p>
+        <p>This is a student project created for educational purposes only. It demonstrates web development concepts and community safety features.</p>
+        <p><strong>NO REAL DATA COLLECTION:</strong> This website does not collect, store, or process any real personal information. All forms and features are for demonstration only.</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isLoggedIn()) {
+                window.location.href = 'dashboard.html';
+            }
+            document.getElementById('password').addEventListener('input', checkPasswordStrength);
+            document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCity - Community Safety Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Educational Notice Banner -->
+    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
+        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This is a student demonstration website for community safety concepts. No real data is collected or processed.
+        <a href="security.html" style="color: white; text-decoration: underline; margin-left: 10px;">Security Information</a>
+    </div>
+    
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links" id="navMenu">
+                    <!-- Navigation will be loaded dynamically based on authentication status -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="dashboard-hero">
+                <h1 class="animated-title">🛡️ SafeCity</h1>
+                <p class="animated-sub">Real-Time Incident Reporting & Safety Analysis</p>
+                <p class="animated-sub2">Help build a safer community by reporting incidents and staying informed about your area.</p>
+                <div class="action-buttons animated-buttons">
+                    <a href="#" id="report-incident-btn" class="btn btn-primary pulse">
+                        🚨 Report Incident
+                    </a>
+                    <a href="#" id="analyze-safety-btn" class="btn btn-secondary pulse">
+                        🔍 Analyze Area Safety
+                    </a>
+                </div>
+            </div>
+            <div class="dashboard-animated-bg"></div>
+        </div>
+        
+        <div class="safety-info">
+            <h2>How SafeCity Works</h2>
+            <div class="animated-cards">
+                <div class="safety-card card-1">
+                    <div class="card-icon">📱</div>
+                    <h3>Report Incidents</h3>
+                    <p>Quickly report incidents using your current location or by selecting a location on the map. Help keep your community informed about safety concerns.</p>
+                </div>
+                <div class="safety-card card-2">
+                    <div class="card-icon">🗺️</div>
+                    <h3>Safety Analysis</h3>
+                    <p>Click anywhere on the map to see the safety level of that area. View recent incidents and understand potential risks before visiting a location.</p>
+                </div>
+                <div class="safety-card card-3">
+                    <div class="card-icon">🔔</div>
+                    <h3>Real-Time Alerts</h3>
+                    <p>Get notified about new incidents near your location. Stay aware of your surroundings and make informed decisions about your safety.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="safety-info">
+            <h2>Safety Zones Explained</h2>
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
+                <div style="text-align: center;">
+                    <div class="safety-level safety-safe">🟩 Safe Zone</div>
+                    <p>No recent incidents reported</p>
+                </div>
+                <div style="text-align: center;">
+                    <div class="safety-level safety-warning">🟨 Alert Zone</div>
+                    <p>Few incidents reported recently</p>
+                </div>
+                <div style="text-align: center;">
+                    <div class="safety-level safety-danger">🟥 High Risk Zone</div>
+                    <p>Multiple incidents reported</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.8); margin-top: 3rem;">
+        <p>&copy; 2025 SafeCity. Building safer communities together.</p>
+        <p>🚨 In case of emergency, always call local emergency services first.</p>
+        <p style="color: #4CAF50; font-weight: bold;">🔒 Secure & Safe - All data is encrypted and protected</p>
+    </footer>
+
+    <!-- Authentication Script -->
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Self-Contained Functions ---
+            let currentUser = null;
+            let authToken = null;
+
+            function isLoggedIn() {
+                const token = localStorage.getItem('safecity_token');
+                const user = localStorage.getItem('safecity_user');
+                if (token && user) {
+                    authToken = token;
+                    currentUser = JSON.parse(user);
+                    return true;
+                }
+                return false;
+            }
+
+            function showAlert(message, type) {
+                let container = document.getElementById('alert-container-fixed');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'alert-container-fixed';
+                    container.style.position = 'fixed';
+                    container.style.top = '20px';
+                    container.style.right = '20px';
+                    container.style.zIndex = '1050';
+                    document.body.appendChild(container);
+                }
+                const alertEl = document.createElement('div');
+                alertEl.className = `alert alert-${type}`;
+                alertEl.textContent = message;
+                container.appendChild(alertEl);
+
+                setTimeout(() => {
+                    alertEl.remove();
+                }, 5000);
+            }
+
+            // --- Event Listeners ---
+            document.getElementById('report-incident-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (isLoggedIn()) {
+                    window.location.href = 'index.html';
+                } else {
+                    showAlert('Please log in to report an incident.', 'warning');
+                }
+            });
+
+            document.getElementById('analyze-safety-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (isLoggedIn()) {
+                    window.location.href = 'safety.html';
+                } else {
+                    showAlert('Please log in to analyze area safety.', 'warning');
+                }
+            });
+
+            // --- Page Animations (from original script) ---
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', () => button.style.transform = 'translateY(-3px)');
+                button.addEventListener('mouseleave', () => button.style.transform = 'translateY(0)');
+            });
+
+            const elements = document.querySelectorAll('.dashboard, .safety-info');
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>

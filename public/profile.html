@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SafeCity</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="index.html">Report Incident</a></li>
+                    <li><a href="safety.html">Safety Analysis</a></li>
+                    <li><a href="signup.html">Sign Up</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="form-container simple-profile" style="background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.07); padding:2rem; max-width:500px; margin:auto;">
+            <h1 style="margin-bottom:1.5rem;">👤 Profile</h1>
+            <div id="auth-status"></div>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" placeholder="First name">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" placeholder="Last name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Phone">
+                </div>
+                <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" placeholder="City, State/Province">
+                </div>
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" name="bio" placeholder="Tell us about yourself..." rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="profile-submit-btn" style="width:100%;margin-top:1rem;">
+                    💾 Update Profile
+                </button>
+            </form>
+            <div style="margin:2rem 0 1rem 0; text-align:center;">
+                <button type="button" class="btn btn-outline" id="change-password-btn" style="background:#fff; border:1px solid #ccc; padding:0.75rem 1.5rem; border-radius:6px; font-weight:500;">🔒 Change Password</button>
+            </div>
+            <div class="form-group" style="background:#fff; border-radius:8px; padding:1rem; margin-bottom:1rem; box-shadow:0 1px 6px rgba(0,0,0,0.04);">
+                <label for="alertRadius">Alert Radius (meters)</label>
+                <input type="range" id="alertRadius" name="alertRadius" min="100" max="10000" value="1000" step="100">
+                <div class="range-value">
+                    <span id="alertRadiusValue">1000</span> meters
+                </div>
+            </div>
+        </div>
+        <!-- Change Password Modal -->
+        <div id="change-password-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="max-width:400px; margin:auto;">
+                <span class="close" onclick="closeModal('change-password-modal')">&times;</span>
+                <h2>🔒 Change Password</h2>
+                <form id="password-form-modal">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password">
+                        <div class="password-strength" id="password-strength-profile"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder="Confirm new password">
+                        <div id="password-match-profile" class="password-match"></div>
+                    </div>
+                    <button type="submit" class="btn btn-warning" id="password-submit-btn" style="width:100%;">
+                        🔒 Change Password
+                    </button>
+                </form>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+    
+    <script>
+        // Initialize profile page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Load user profile
+            loadUserProfile();
+            
+            // Add event listeners
+            document.getElementById('alertRadius').addEventListener('input', function() {
+                document.getElementById('alertRadiusValue').textContent = this.value;
+            });
+            
+            // Password strength checker for profile
+            document.getElementById('newPassword').addEventListener('input', function() {
+                checkPasswordStrengthProfile();
+            });
+            
+            document.getElementById('confirmNewPassword').addEventListener('input', function() {
+                checkPasswordMatchProfile();
+            });
+        });
+    </script>
+</body>
+</html>

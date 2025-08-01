@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Analysis - SafeCity</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Educational Notice Banner -->
+    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
+        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This safety analysis is for demonstration purposes. Data shown is simulated.
+    </div>
+    
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links" id="navMenu">
+                    <!-- Navigation will be loaded dynamically based on authentication status -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="form-container">
+            <h1>🔍 Safety Analysis & Real-Time Alerts</h1>
+            <p>Click anywhere on the map to analyze the safety level of that area. View recent incidents and get real-time alerts about your surroundings.</p>
+            
+            <div id="location-status"></div>
+            
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0;">
+                <button id="refresh-btn" class="btn" onclick="refreshData()">🔄 Refresh Data</button>
+                <button type="button" onclick="toggleManualCoordinatesSafety()" class="btn" style="background: #667eea; color: white;">
+                    📝 Analyze Specific Location
+                </button>
+                <div style="flex: 1; text-align: right;">
+                    <span style="color: #666; font-size: 0.9rem;">Real-time alerts: Active</span>
+                </div>
+            </div>
+            
+            <!-- Manual coordinate input for safety analysis -->
+            <div id="manual-coordinates-safety" style="display: none; margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <p style="margin: 0 0 1rem 0; font-weight: bold;">Analyze Safety at Location:</p>
+                <input type="text" id="safety-location-search" placeholder="Search for a location (e.g. New York, NY)" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" onclick="analyzeLocationSearch()" style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        🔍 Analyze Location
+                    </button>
+                    <button type="button" onclick="useCurrentLocationSafety()" style="padding: 0.5rem 1rem; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        � Use Live Location
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-container" style="position: relative;">
+            <div id="map"></div>
+        </div>
+        
+        <div class="safety-info">
+            <h2>How to Use Safety Analysis</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 1.5rem;">
+                
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                    <h4>Click to Analyze</h4>
+                    <p>Click anywhere on the map to see the safety level and recent incidents in that area.</p>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📍</div>
+                    <h4>View Incidents</h4>
+                    <p>See markers showing recent incidents. Click on markers for detailed information.</p>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔔</div>
+                    <h4>Get Alerts</h4>
+                    <p>Receive real-time notifications about new incidents near your current location.</p>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div class="form-container">
+            <h3>Safety Zone Legend</h3>
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
+                
+                <div style="text-align: center;">
+                    <div class="safety-level safety-safe">🟩 Safe Zone</div>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">No incidents reported in the last 7 days</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div class="safety-level safety-warning">🟨 Alert Zone</div>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">1-2 incidents reported in the last 7 days</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div class="safety-level safety-danger">🟥 High Risk Zone</div>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">3+ incidents reported in the last 7 days</p>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div class="safety-info">
+            <h3>🔔 Real-Time Alert System</h3>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                <p><strong>How it works:</strong></p>
+                <ul>
+                    <li>Automatically checks for new incidents every 30 seconds</li>
+                    <li>Alerts you about incidents within 1km of your location</li>
+                    <li>Shows incident type, time, and distance from you</li>
+                    <li>Helps you stay aware of your surroundings</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>Note:</strong> Location access must be enabled for real-time alerts to work.</p>
+            </div>
+        </div>
+        
+        <div class="safety-info">
+            <h3>📊 Incident Categories</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div style="text-align: center; padding: 0.5rem;">🔴 Theft</div>
+                <div style="text-align: center; padding: 0.5rem;">🟠 Harassment</div>
+                <div style="text-align: center; padding: 0.5rem;">🔴 Violence</div>
+                <div style="text-align: center; padding: 0.5rem;">🟡 Vandalism</div>
+                <div style="text-align: center; padding: 0.5rem;">🟡 Suspicious Activity</div>
+                <div style="text-align: center; padding: 0.5rem;">⚪ Other</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Maps JavaScript API -->
+    <!-- Custom JavaScript -->
+    <script src="js/auth.js"></script>
+    <script src="js/safety.js"></script>
+    <!-- Google Maps JavaScript API -->
+    <script>
+  fetch('https://safe-city-8gxz.onrender.com/api/google-api-key')
+    .then(response => response.json())
+    .then(data => {
+      if (data.apiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+      } else {
+        console.error("❌ API key missing in response.");
+      }
+    })
+    .catch(err => {
+      console.error("❌ Failed to load Google Maps API:", err);
+    });
+</script>
+
+    <script>
+        // Fallback if Google Maps fails to load
+        window.addEventListener('error', function(e) {
+            if (e.filename && e.filename.includes('maps.googleapis.com')) {
+                document.getElementById('map').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f5f5f5; color: #666;">
+                        <div style="text-align: center;">
+                            <p><strong>Map Service Unavailable</strong></p>
+                            <p>Map functionality requires Google Maps API key.</p>
+                            <p style="font-size: 0.9rem;">Safety analysis will be limited without map visualization.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
