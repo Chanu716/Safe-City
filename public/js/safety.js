@@ -3,7 +3,7 @@
 let map;
 let infoWindow;
 let userMarker;
-let currentLoca        const API_BASE = '';n = null;
+let currentLocation = null;
 let incidentMarkers = [];
 let safetyCircles = [];
 let alertInterval;
@@ -111,8 +111,13 @@ async function analyzeLocation(latLng) {
     };
     
     try {
-        // Use relative URL for API calls
-        const response = await fetch(`/api/incidents/nearby?lat=${location.lat}&lng=${location.lng}&radius=1000`);
+        // Determine API base URL (localhost vs production)
+        const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? `http://localhost:3000`
+            : 'https://safe-city-8gxz.onrender.com';
+        
+        // Fetch incidents near this location
+        const response = await fetch(`${apiBaseUrl}/api/incidents/nearby?lat=${location.lat}&lng=${location.lng}&radius=1000`);
         const incidents = await response.json();
         
         // Calculate safety level
