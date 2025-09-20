@@ -1,7 +1,7 @@
 {
   "name": "safecity",
   "version": "1.0.0",
-  "description": "Real-Time Incident Reporting & Safety Analysis Web Application",
+  "description": "Community Safety Platform with Real-Time Incident Reporting, Admin Moderation, Safety Analysis, and Email Notifications",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -10,9 +10,12 @@
     "test:watch": "jest --watch",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "setup": "npm install && echo 'Setup complete! Run npm run dev to start the development server.'",
+    "setup": "npm install && echo 'Setup complete! Copy .env.example to .env and configure your environment variables.'",
     "init-db": "node scripts/init-db.js",
-    "reset-indexes": "node scripts/init-db.js"
+    "reset-indexes": "node scripts/init-db.js",
+    "grant-admin": "node scripts/grant-admin.js",
+    "update-consent": "node scripts/update-user-consent.js",
+    "unlock-account": "node unlock-account.js"
   },
   "keywords": [
     "safety",

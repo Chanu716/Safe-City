@@ -3,6 +3,7 @@
 
 const mongoose = require('mongoose');
 const User = require('../models/User');
+require('dotenv').config();
 
 // Configuration
 const ADMIN_EMAILS = [
@@ -10,14 +11,17 @@ const ADMIN_EMAILS = [
     'charmiseera07@gmail.com'
 ];
 
-// Get MongoDB URI from environment or use fallback
-const MONGODB_URI = process.env.MONGODB_URI || 
-    process.env.DATABASE_URL || 
-    process.env.MONGODB_URI ||
-    'mongodb+srv://chanuk716:chanusafe@cluster0.4jftu.mongodb.net/safecity?retryWrites=true&w=majority';
+// Get MongoDB URI from environment variables only (no fallback with credentials)
+const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URL;
 
 async function grantAdminPrivileges() {
     try {
+        if (!MONGODB_URI) {
+            console.error('❌ MONGODB_URI environment variable is required');
+            console.log('💡 Set MONGODB_URI in your .env file or environment variables');
+            process.exit(1);
+        }
+
         console.log('🔌 Connecting to MongoDB...');
         await mongoose.connect(MONGODB_URI);
         console.log('✅ Connected to MongoDB');

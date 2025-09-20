@@ -2,12 +2,19 @@
 
 const mongoose = require('mongoose');
 const User = require('./models/User');
+require('dotenv').config();
 
-// MongoDB connection (using the same connection string as the app)
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://karrichanikya:Karrichani2005@cluster0.m3hgp.mongodb.net/safecity';
+// MongoDB connection (using environment variables only)
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function unlockAccount(email) {
     try {
+        if (!MONGODB_URI) {
+            console.error('❌ MONGODB_URI environment variable is required');
+            console.log('💡 Set MONGODB_URI in your .env file or environment variables');
+            process.exit(1);
+        }
+
         // Connect to MongoDB
         await mongoose.connect(MONGODB_URI);
         console.log('✅ Connected to MongoDB');
