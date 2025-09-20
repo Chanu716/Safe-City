@@ -29,7 +29,7 @@ window.loadUserProfile = async function() {
         console.error('Error loading profile:', error);
         showAlert('Failed to load profile data. Please try again.', 'danger');
     }
-}
+};
 
 // Update user profile
 async function updateProfile(formData) {
@@ -46,21 +46,21 @@ async function updateProfile(formData) {
         
         const data = await response.json();
         
-            if (response.ok) {
-                showAlert('Profile updated successfully!', 'success');
+        if (response.ok) {
+            showAlert('Profile updated successfully!', 'success');
                 
-                // Update local storage with new user data
-                const currentUser = getCurrentUser();
-                const updatedUser = { ...currentUser, ...data.user };
-                localStorage.setItem('safecity_user', JSON.stringify(updatedUser));
+            // Update local storage with new user data
+            const currentUser = getCurrentUser();
+            const updatedUser = { ...currentUser, ...data.user };
+            localStorage.setItem('safecity_user', JSON.stringify(updatedUser));
                 
+        } else {
+            if (data.details && Array.isArray(data.details)) {
+                showAlert(data.details.join('<br>'), 'danger');
             } else {
-                if (data.details && Array.isArray(data.details)) {
-                    showAlert(data.details.join('<br>'), 'danger');
-                } else {
-                    showAlert(data.error || 'Failed to update profile', 'danger');
-                }
+                showAlert(data.error || 'Failed to update profile', 'danger');
             }
+        }
         
     } catch (error) {
         console.error('Error updating profile:', error);
@@ -121,7 +121,7 @@ window.changePassword = async function(passwordData) {
     } finally {
         hideLoading('password-submit-btn', '🔒 Change Password');
     }
-}
+};
 
 // Password strength checker for profile page
 window.checkPasswordStrengthProfile = function() {
@@ -148,7 +148,7 @@ window.checkPasswordStrengthProfile = function() {
         strengthDiv.className = 'password-strength strong';
     }
     strengthDiv.textContent = feedback;
-}
+};
 
 
 // Password match checker for profile page
@@ -169,7 +169,7 @@ window.checkPasswordMatchProfile = function() {
         matchDiv.textContent = '✗ Passwords do not match';
         matchDiv.className = 'password-match no-match';
     }
-}
+};
 
 // Form submission handlers
 document.addEventListener('DOMContentLoaded', function() {
