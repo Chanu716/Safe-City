@@ -43,9 +43,7 @@ async function signUp(userData) {
     try {
         showLoading('signup-btn', 'Creating Account...');
         
-        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:3000/api/auth/signup'
-            : 'https://safe-city-8gxz.onrender.com/api/auth/signup';
+        const apiUrl = '/api/auth/signup';
             
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -92,9 +90,7 @@ async function login(credentials) {
     try {
         showLoading('login-btn', 'Signing In...');
         
-        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:3000/api/auth/login'
-            : 'https://safe-city-8gxz.onrender.com/api/auth/login';
+        const apiUrl = '/api/auth/login';
             
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -131,9 +127,7 @@ async function logout() {
     try {
         // Call backend logout endpoint
         if (authToken) {
-            const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                ? 'http://localhost:3000/api/auth/logout'
-                : 'https://safe-city-8gxz.onrender.com/api/auth/logout';
+            const apiUrl = '/api/auth/logout';
                 
             await fetch(apiUrl, {
                 method: 'POST',
@@ -373,10 +367,8 @@ async function authenticatedFetch(url, options = {}) {
     }
     
     // If relative API path, prefix with backend URL
-    const apiPrefix = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-        ? 'http://localhost:3000'
-        : 'https://safe-city-8gxz.onrender.com';
-    const fullUrl = url.startsWith('/api/') ? apiPrefix + url : url;
+    // Use relative URLs for API calls (works on any domain)
+    const fullUrl = url;
     const response = await fetch(fullUrl, options);
     
     // Handle token expiration

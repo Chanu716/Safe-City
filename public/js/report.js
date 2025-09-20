@@ -214,9 +214,7 @@ async function submitReport(event) {
         submitBtn.disabled = true;
         
         // Send to backend
-        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:3000/api/incidents'
-            : 'https://safe-city-8gxz.onrender.com/api/incidents';
+        const apiUrl = '/api/incidents';
             
         const response = await fetch(apiUrl, {
             method: 'POST',
