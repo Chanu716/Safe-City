@@ -6,8 +6,37 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto'); // Built-in Node.js module
 const User = require('../models/User');
 const { auth, authorize } = require('../middleware/auth');
+const { 
+    sanitizeInput, 
+    handleValidationErrors, 
+    validationRules, 
+    createStrictLimiter 
+} = require('../middleware/security');
+const { body } = require('express-validator');
 
 const router = express.Router();
+
+// More user-friendly rate limiting for auth endpoints
+const loginLimiter = createStrictLimiter(
+    15 * 60 * 1000, // 15 minutes
+    20, // max 20 login attempts per IP (increased from 5)
+    'Too many login attempts, please try again later'
+);
+
+const signupLimiter = createStrictLimiter(
+    60 * 60 * 1000, // 1 hour
+    10, // max 10 signup attempts per IP (increased from 3)
+    'Too many signup attempts, please try again later'
+);
+
+const passwordResetLimiter = createStrictLimiter(
+    60 * 60 * 1000, // 1 hour
+    10, // max 10 password reset attempts per IP (increased from 3)
+    'Too many password reset attempts, please try again later'
+);
+
+// Apply input sanitization to all routes
+router.use(sanitizeInput);
 
 // JWT secret (should be in environment variables)
 const JWT_SECRET = process.env.JWT_SECRET || 'safecity_development_secret_key_change_in_production';
@@ -19,7 +48,25 @@ const generateToken = (userId) => {
 };
 
 // POST /api/auth/signup - Register new user
-router.post('/signup', async (req, res) => {
+router.post('/signup', 
+    signupLimiter,
+    [
+        validationRules.name('firstName'),
+        validationRules.name('lastName'),
+        validationRules.email,
+        validationRules.password,
+        body('confirmPassword')
+            .custom((value, { req }) => {
+                if (value !== req.body.password) {
+                    throw new Error('Passwords do not match');
+                }
+                return true;
+            }),
+        validationRules.phone,
+        validationRules.location
+    ],
+    handleValidationErrors,
+    async (req, res) => {
     try {
         const {
             firstName,
@@ -119,7 +166,16 @@ router.post('/signup', async (req, res) => {
 });
 
 // POST /api/auth/login - Login user
-router.post('/login', async (req, res) => {
+router.post('/login', 
+    loginLimiter,
+    [
+        validationRules.email,
+        body('password')
+            .notEmpty()
+            .withMessage('Password is required')
+    ],
+    handleValidationErrors,
+    async (req, res) => {
     try {
         const { email, password, remember } = req.body;
 
@@ -136,13 +192,6 @@ router.post('/login', async (req, res) => {
         if (!user) {
             return res.status(401).json({
                 error: 'Invalid email or password'
-            });
-        }
-
-        // Check if account is locked
-        if (user.isLocked) {
-            return res.status(423).json({
-                error: 'Account temporarily locked due to multiple failed login attempts. Please try again later.'
             });
         }
 
@@ -164,7 +213,6 @@ router.post('/login', async (req, res) => {
         const isPasswordValid = await user.comparePassword(password);
         
         if (!isPasswordValid) {
-            await user.handleFailedLogin();
             return res.status(401).json({
                 error: 'Invalid email or password'
             });
