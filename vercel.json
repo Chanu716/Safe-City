@@ -1,15 +1,15 @@
 {
   "version": 2,
-  "functions": {
-    "app.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "redirects": [
+  "builds": [
     {
-      "source": "/",
-      "destination": "/dashboard.html",
-      "permanent": true
+      "src": "app.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/app.js"
     }
   ],
   "headers": [
@@ -51,8 +51,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
