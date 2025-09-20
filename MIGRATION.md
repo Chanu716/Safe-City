@@ -118,9 +118,7 @@ MONGODB_URI=your_mongodb_connection_string
 ```bash
 # Solutions:
 1. Verify .env file exists in project root
-2. Check MONGODB_URI format:
-   - Local: mongodb://localhost:27017/safecity
-   - Cloud: mongodb+srv://user:pass@cluster.mongodb.net/safecity
+2. Check MONGODB_URI format
 3. Test connection: mongo "your_connection_string"
 ```
 
