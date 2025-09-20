@@ -528,4 +528,153 @@ router.delete('/delete-account', auth, async (req, res) => {
     }
 });
 
+// GDPR compliance endpoints
+// POST /api/auth/consent - Update user consent
+router.post('/consent', auth, async (req, res) => {
+    try {
+        const { consent } = req.body;
+        
+        if (!consent || typeof consent !== 'object') {
+            return res.status(400).json({
+                error: 'Consent data is required'
+            });
+        }
+
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        // Update consent
+        user.consent = {
+            ...user.consent,
+            ...consent,
+            consentDate: new Date(),
+            consentVersion: '1.0'
+        };
+
+        await user.save();
+
+        res.json({
+            message: 'Consent updated successfully',
+            consent: user.consent
+        });
+
+    } catch (error) {
+        console.error('Update consent error:', error);
+        res.status(500).json({
+            error: 'Failed to update consent'
+        });
+    }
+});
+
+// GET /api/auth/export-data - Export user data (GDPR compliance)
+router.get('/export-data', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        const exportData = user.exportData();
+        
+        // Also include incidents reported by this user
+        const Incident = require('../models/Incident');
+        const userIncidents = await Incident.find({ 'reporter.userId': user._id });
+        
+        exportData.incidents = userIncidents.map(incident => ({
+            id: incident._id,
+            title: incident.title,
+            category: incident.category,
+            description: incident.description,
+            timestamp: incident.timestamp,
+            status: incident.status,
+            location: {
+                latitude: incident.latitude,
+                longitude: incident.longitude
+            }
+        }));
+
+        res.json(exportData);
+
+    } catch (error) {
+        console.error('Export data error:', error);
+        res.status(500).json({
+            error: 'Failed to export data'
+        });
+    }
+});
+
+// POST /api/auth/request-deletion - Request account deletion (GDPR compliance)
+router.post('/request-deletion', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        if (user.dataRetention.requestedDeletion) {
+            return res.status(400).json({
+                error: 'Deletion already requested',
+                scheduledDate: user.dataRetention.deletionScheduledDate
+            });
+        }
+
+        await user.requestDeletion();
+
+        res.json({
+            message: 'Account deletion requested. Your account will be deleted in 30 days.',
+            scheduledDate: user.dataRetention.deletionScheduledDate
+        });
+
+    } catch (error) {
+        console.error('Request deletion error:', error);
+        res.status(500).json({
+            error: 'Failed to request deletion'
+        });
+    }
+});
+
+// POST /api/auth/cancel-deletion - Cancel account deletion request
+router.post('/cancel-deletion', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        if (!user.dataRetention.requestedDeletion) {
+            return res.status(400).json({
+                error: 'No deletion request found'
+            });
+        }
+
+        // Cancel deletion request
+        user.dataRetention.requestedDeletion = false;
+        user.dataRetention.deletionRequestDate = undefined;
+        user.dataRetention.deletionScheduledDate = undefined;
+        user.isActive = true;
+
+        await user.save();
+
+        res.json({
+            message: 'Account deletion cancelled successfully'
+        });
+
+    } catch (error) {
+        console.error('Cancel deletion error:', error);
+        res.status(500).json({
+            error: 'Failed to cancel deletion'
+        });
+    }
+});
+
 module.exports = router;

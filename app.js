@@ -11,6 +11,7 @@ const app = express();
 // Import routes
 const incidentRoutes = require('./routes/incidents');
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 
 // Middleware
 app.use(cors({
@@ -95,6 +96,7 @@ connectDB();
 // Routes
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

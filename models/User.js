@@ -142,7 +142,48 @@ const userSchema = new mongoose.Schema({
     },
     
     banReason: String,
-    banExpires: Date
+    banExpires: Date,
+    
+    // Privacy and consent fields for production use
+    consent: {
+        dataCollection: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        dataProcessing: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        marketing: {
+            type: Boolean,
+            default: false
+        },
+        consentDate: {
+            type: Date,
+            default: Date.now
+        },
+        consentVersion: {
+            type: String,
+            default: '1.0'
+        }
+    },
+    
+    // Data retention and anonymization
+    dataRetention: {
+        requestedDeletion: {
+            type: Boolean,
+            default: false
+        },
+        deletionRequestDate: Date,
+        deletionScheduledDate: Date,
+        anonymized: {
+            type: Boolean,
+            default: false
+        },
+        anonymizedDate: Date
+    }
     
 }, {
     timestamps: true,
@@ -261,6 +302,50 @@ userSchema.statics.getStats = function() {
             }
         }
     ]);
+};
+
+// Instance method to anonymize user data (GDPR compliance)
+userSchema.methods.anonymizeData = async function() {
+    this.firstName = 'Anonymous';
+    this.lastName = 'User';
+    this.email = `anonymized_${this._id}@deleted.local`;
+    this.phone = undefined;
+    this.location = undefined;
+    this.profile.bio = undefined;
+    this.profile.avatar = undefined;
+    this.dataRetention.anonymized = true;
+    this.dataRetention.anonymizedDate = new Date();
+    
+    return this.save();
+};
+
+// Instance method to request account deletion
+userSchema.methods.requestDeletion = async function() {
+    this.dataRetention.requestedDeletion = true;
+    this.dataRetention.deletionRequestDate = new Date();
+    this.dataRetention.deletionScheduledDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    this.isActive = false;
+    
+    return this.save();
+};
+
+// Instance method to export user data (GDPR compliance)
+userSchema.methods.exportData = function() {
+    const userData = this.toJSON();
+    
+    // Remove sensitive fields from export
+    delete userData.password;
+    delete userData.verificationToken;
+    delete userData.resetPasswordToken;
+    delete userData.resetPasswordExpires;
+    delete userData.loginAttempts;
+    delete userData.lockUntil;
+    
+    return {
+        userData,
+        exportDate: new Date(),
+        exportFormat: 'JSON'
+    };
 };
 
 // Transform function to clean up output

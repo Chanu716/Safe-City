@@ -3,6 +3,8 @@
 const express = require('express');
 const router = express.Router();
 const Incident = require('../models/Incident');
+const { auth, optionalAuth } = require('../middleware/auth');
+const { requireConsent, checkDeletionStatus } = require('../middleware/consent');
 
 // Helper function to calculate distance between two points (Haversine formula)
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -20,12 +22,21 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
 
-// GET /api/incidents - Get all incidents
-router.get('/', async (req, res) => {
+// GET /api/incidents - Get all incidents (only approved ones for public)
+router.get('/', optionalAuth, async (req, res) => {
     try {
-        const incidents = await Incident.find()
+        // Only show approved incidents to non-admin users
+        let query = { 'moderation.status': 'approved' };
+        
+        // If user is admin or moderator, show all incidents
+        if (req.user && (req.user.role === 'admin' || req.user.role === 'moderator')) {
+            query = {};
+        }
+        
+        const incidents = await Incident.find(query)
             .sort({ timestamp: -1 })
-            .limit(100); // Limit to last 100 incidents
+            .limit(100) // Limit to last 100 incidents
+            .populate('reporter.userId', 'firstName lastName', null, { strictPopulate: false });
         
         res.json(incidents);
     } catch (error) {
@@ -34,10 +45,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST /api/incidents - Create new incident
-router.post('/', async (req, res) => {
+// POST /api/incidents - Create new incident (requires authentication and consent)
+router.post('/', auth, requireConsent, checkDeletionStatus, async (req, res) => {
     try {
-        const { title, category, description, latitude, longitude } = req.body;
+        const { title, category, description, latitude, longitude, anonymous = false } = req.body;
         
         // Validate required fields
         if (!title || !category || !description || !latitude || !longitude) {
@@ -53,20 +64,46 @@ router.post('/', async (req, res) => {
             });
         }
         
-        // Create new incident
+        // Create new incident with enhanced fields
         const incident = new Incident({
             title: title.trim(),
             category,
             description: description.trim(),
             latitude: parseFloat(latitude),
             longitude: parseFloat(longitude),
-            timestamp: new Date()
+            timestamp: new Date(),
+            reporter: {
+                userId: anonymous ? undefined : req.user.userId,
+                anonymous: anonymous,
+                consented: true // Since requireConsent middleware passed
+            },
+            metadata: {
+                userAgent: req.get('User-Agent'),
+                ipAddress: req.ip,
+                source: 'web'
+            }
         });
         
         const savedIncident = await incident.save();
         
+        // Increment user's report count if not anonymous
+        if (!anonymous && req.user) {
+            const User = require('../models/User');
+            await User.findByIdAndUpdate(req.user.userId, {
+                $inc: { 'profile.reportsCount': 1, 'profile.points': 10 }
+            });
+        }
+        
         res.status(201).json({
-            message: 'Incident reported successfully',
+            message: 'Incident reported successfully. It will be reviewed before being published.',
+            incident: {
+                id: savedIncident._id,
+                title: savedIncident.title,
+                category: savedIncident.category,
+                timestamp: savedIncident.timestamp,
+                status: savedIncident.moderation.status
+            }
+        });
             incident: savedIncident
         });
         
