@@ -359,10 +359,9 @@ router.post('/forgot-password', async (req, res) => {
         const user = await User.findByEmail(email);
         
         if (!user) {
-            // Don't reveal if email exists for security, but still return success
-            return res.json({
-                success: true,
-                message: 'If an account with that email exists, a verification code has been sent'
+            // Return error for unregistered email (as requested by user)
+            return res.status(404).json({
+                error: 'No account found with this email address. Please check your email or sign up for a new account.'
             });
         }
 

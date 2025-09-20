@@ -394,19 +394,30 @@ router.post('/grant-admin', auth, requireAdmin, async (req, res) => {
 // GET /api/admin/stats - Get admin statistics
 router.get('/stats', auth, requireModerator, async (req, res) => {
     try {
-        // Get incident statistics
-        const incidentStats = await Incident.aggregate([
-            {
-                $group: {
-                    _id: '$moderation.status',
-                    count: { $sum: 1 }
-                }
-            }
-        ]);
-
-        const userStats = await User.getStats();
+        // Get total incident count
+        const totalIncidents = await Incident.countDocuments();
         
-        // Get category statistics
+        // Get pending incidents count
+        const pendingIncidents = await Incident.countDocuments({ 'moderation.status': 'pending' });
+        
+        // Get monthly incidents (current month)
+        const currentMonth = new Date();
+        currentMonth.setDate(1);
+        currentMonth.setHours(0, 0, 0, 0);
+        const monthlyIncidents = await Incident.countDocuments({ 
+            timestamp: { $gte: currentMonth } 
+        });
+
+        // Get user statistics
+        const userStatsResult = await User.getStats();
+        const userStats = userStatsResult[0] || {
+            totalUsers: 0,
+            verifiedUsers: 0,
+            activeUsers: 0,
+            averagePoints: 0
+        };
+        
+        // Get category statistics for additional data
         const categoryStats = await Incident.getCategoryStats();
 
         // Get recent activity
@@ -416,17 +427,16 @@ router.get('/stats', auth, requireModerator, async (req, res) => {
             .populate('reporter.userId', 'firstName lastName');
 
         res.json({
-            incidents: {
-                byStatus: incidentStats,
-                byCategory: categoryStats,
-                recent: recentIncidents
-            },
-            users: userStats[0] || {
-                totalUsers: 0,
-                verifiedUsers: 0,
-                activeUsers: 0,
-                averagePoints: 0
-            }
+            totalIncidents,
+            pendingIncidents,
+            monthlyIncidents,
+            totalUsers: userStats.totalUsers,
+            verifiedUsers: userStats.verifiedUsers,
+            activeUsers: userStats.activeUsers,
+            averagePoints: userStats.averagePoints,
+            // Additional data for future use
+            categoryStats,
+            recentIncidents
         });
 
     } catch (error) {

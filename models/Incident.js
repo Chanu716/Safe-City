@@ -280,11 +280,12 @@ incidentSchema.pre(['updateOne', 'findOneAndUpdate'], function(next) {
 
 // Virtual for formatted timestamp
 incidentSchema.virtual('formattedTimestamp').get(function() {
-    return this.timestamp.toLocaleString();
+    return this.timestamp ? this.timestamp.toLocaleString() : 'Unknown';
 });
 
 // Virtual for time ago
 incidentSchema.virtual('timeAgo').get(function() {
+    if (!this.timestamp) return 'Unknown time';
     const now = new Date();
     const diffMs = now - this.timestamp;
     const diffMins = Math.floor(diffMs / 60000);

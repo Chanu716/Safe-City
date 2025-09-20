@@ -157,16 +157,8 @@ router.get('/nearby', async (req, res) => {
             });
         }
         
-        // Only show approved incidents to non-admin users
-        let query = { 'moderation.status': 'approved' };
-        
-        // If user is admin or moderator, show all incidents
-        if (req.user && (req.user.role === 'admin' || req.user.role === 'moderator')) {
-            query = {};
-        }
-        
-        // Get filtered incidents (in a real app, you'd use geospatial queries)
-        const allIncidents = await Incident.find(query).sort({ timestamp: -1 });
+        // Get only approved incidents (in a real app, you'd use geospatial queries)
+        const allIncidents = await Incident.find({ 'moderation.status': 'approved' }).sort({ timestamp: -1 });
         
         // Filter incidents within radius
         const nearbyIncidents = allIncidents.filter(incident => {
@@ -203,19 +195,11 @@ router.get('/recent', async (req, res) => {
         // Default to last 5 minutes if no 'since' parameter
         const sinceDate = since ? new Date(since) : new Date(Date.now() - 5 * 60 * 1000);
         
-        // Only show approved incidents to non-admin users
-        let query = { 
+        // Get recent approved incidents
+        const recentIncidents = await Incident.find({
             timestamp: { $gte: sinceDate },
-            'moderation.status': 'approved' 
-        };
-        
-        // If user is admin or moderator, show all incidents including pending/rejected
-        if (req.user && (req.user.role === 'admin' || req.user.role === 'moderator')) {
-            query = { timestamp: { $gte: sinceDate } };
-        }
-        
-        // Get recent incidents
-        const recentIncidents = await Incident.find(query).sort({ timestamp: -1 });
+            'moderation.status': 'approved'
+        }).sort({ timestamp: -1 });
         
         // Filter incidents within radius
         const nearbyRecentIncidents = recentIncidents.filter(incident => {

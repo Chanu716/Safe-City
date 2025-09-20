@@ -122,6 +122,7 @@ class AdminDashboard {
             }
 
             this.stats = await response.json();
+            console.log('📊 Stats loaded:', this.stats);
             this.renderStats();
 
         } catch (error) {
@@ -132,7 +133,11 @@ class AdminDashboard {
 
     renderStats() {
         const statsContainer = document.getElementById('statsCards');
-        if (!statsContainer) return;
+        if (!statsContainer) {
+            console.warn('⚠️ Stats container not found');
+            return;
+        }
+        console.log('📊 Rendering stats:', this.stats);
 
         const statsHtml = `
             <div class="stat-card">
@@ -214,13 +219,13 @@ class AdminDashboard {
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-small btn-approve" onclick="adminDashboard.approveIncident('${incident._id}')">
+                        <button class="btn-small btn-approve" data-action="approve" data-incident-id="${incident._id}">
                             ✓ Approve
                         </button>
-                        <button class="btn-small btn-reject" onclick="adminDashboard.rejectIncident('${incident._id}')">
+                        <button class="btn-small btn-reject" data-action="reject" data-incident-id="${incident._id}">
                             ✗ Reject
                         </button>
-                        <button class="btn-small btn-flag" onclick="adminDashboard.flagIncident('${incident._id}')">
+                        <button class="btn-small btn-flag" data-action="flag" data-incident-id="${incident._id}">
                             ⚠ Flag
                         </button>
                     </div>
@@ -247,7 +252,7 @@ class AdminDashboard {
 
         const paginationHtml = Array.from({ length: totalPages }, (_, i) => i + 1).map(page => `
             <button class="${page === this.currentIncidentPage ? 'active' : ''}" 
-                    onclick="adminDashboard.loadPendingIncidents(${page})">
+                    data-action="paginate-incidents" data-page="${page}">
                 ${page}
             </button>
         `).join('');
@@ -308,20 +313,20 @@ class AdminDashboard {
                 <td>
                     <div class="action-buttons">
                         ${user.status !== 'banned' ? `
-                            <button class="btn-small btn-ban" onclick="adminDashboard.banUser('${user._id}')">
+                            <button class="btn-small btn-ban" data-action="ban" data-user-id="${user._id}">
                                 🚫 Ban
                             </button>
                         ` : `
-                            <button class="btn-small btn-unban" onclick="adminDashboard.unbanUser('${user._id}')">
+                            <button class="btn-small btn-unban" data-action="unban" data-user-id="${user._id}">
                                 ✓ Unban
                             </button>
                         `}
                         ${user.role === 'user' ? `
-                            <button class="btn-small btn-approve" onclick="adminDashboard.makeUserModerator('${user._id}')">
+                            <button class="btn-small btn-approve" data-action="promote" data-user-id="${user._id}">
                                 ⬆ Promote
                             </button>
                         ` : user.role === 'moderator' && this.currentUser.role === 'admin' ? `
-                            <button class="btn-small btn-reject" onclick="adminDashboard.demoteUser('${user._id}')">
+                            <button class="btn-small btn-reject" data-action="demote" data-user-id="${user._id}">
                                 ⬇ Demote
                             </button>
                         ` : ''}
@@ -349,7 +354,7 @@ class AdminDashboard {
 
         const paginationHtml = Array.from({ length: totalPages }, (_, i) => i + 1).map(page => `
             <button class="${page === this.currentUserPage ? 'active' : ''}" 
-                    onclick="adminDashboard.loadUsers(${page}, document.getElementById('userSearch').value)">
+                    data-action="paginate-users" data-page="${page}">
                 ${page}
             </button>
         `).join('');
@@ -433,6 +438,50 @@ class AdminDashboard {
                 }, 500);
             });
         }
+
+        // Event delegation for dynamically generated buttons
+        document.addEventListener('click', (e) => {
+            const action = e.target.getAttribute('data-action');
+            if (!action) return;
+
+            e.preventDefault();
+            
+            switch (action) {
+                case 'approve':
+                    this.approveIncident(e.target.getAttribute('data-incident-id'));
+                    break;
+                case 'reject':
+                    this.rejectIncident(e.target.getAttribute('data-incident-id'));
+                    break;
+                case 'flag':
+                    this.flagIncident(e.target.getAttribute('data-incident-id'));
+                    break;
+                case 'ban':
+                    this.banUser(e.target.getAttribute('data-user-id'));
+                    break;
+                case 'unban':
+                    this.unbanUser(e.target.getAttribute('data-user-id'));
+                    break;
+                case 'promote':
+                    this.makeUserModerator(e.target.getAttribute('data-user-id'));
+                    break;
+                case 'demote':
+                    this.demoteUser(e.target.getAttribute('data-user-id'));
+                    break;
+                case 'paginate-incidents':
+                    this.loadPendingIncidents(parseInt(e.target.getAttribute('data-page')));
+                    break;
+                case 'paginate-users':
+                    this.loadUsers(parseInt(e.target.getAttribute('data-page')), document.getElementById('userSearch')?.value || '');
+                    break;
+                case 'refresh':
+                    this.refreshData();
+                    break;
+                case 'close-modal':
+                    this.closeModal(e.target.getAttribute('data-modal'));
+                    break;
+            }
+        });
 
         // Form submissions
         this.setupFormListeners();
@@ -736,7 +785,8 @@ class AdminDashboard {
             const isAdmin = ['admin', 'moderator'].includes(this.currentUser.role);
             navMenu.innerHTML = `
                 <li><a href="dashboard.html">🏠 Dashboard</a></li>
-                <li><a href="safety.html">📍 Report Incident</a></li>
+                <li><a href="index.html">📍 Report Incident</a></li>
+                <li><a href="safety.html">🛡️ Analyze Safety</a></li>
                 ${isAdmin ? '<li><a href="admin.html" class="active">🔧 Admin</a></li>' : ''}
                 <li><a href="profile.html">👤 Profile</a></li>
                 <li><a href="#" onclick="logout()">🚪 Logout</a></li>
@@ -746,7 +796,7 @@ class AdminDashboard {
 
     // Refresh data
     async refreshData() {
-        const refreshButton = document.querySelector('button[onclick="refreshData()"]');
+        const refreshButton = document.querySelector('button[data-action="refresh"]');
         if (refreshButton) {
             const originalText = refreshButton.innerHTML;
             refreshButton.innerHTML = '<span class="loading"></span> Refreshing...';

@@ -6,7 +6,7 @@ SafeCity is a comprehensive full-stack web application designed for **real-time 
 
 ---
 
-## � Key Features
+## 🌟 Key Features
 
 ### 🔐 **Advanced Authentication System**
 - **Secure Login/Registration** with bcrypt password hashing
@@ -138,7 +138,7 @@ The app will load the key from `.env` and inject it into the frontend.
 
 ---
 
-## � Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js (v14 or higher)
@@ -302,7 +302,7 @@ For detailed migration instructions, see [MIGRATION.md](./MIGRATION.md).
 
 ---
 
-## � Project Structure
+## 📁 Project Structure
 
 ```
 Safe-City/

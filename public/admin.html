@@ -465,7 +465,7 @@
             <div class="admin-section full-width-section">
                 <div class="section-header">
                     <h2 class="section-title">📊 Recent Activity</h2>
-                    <button class="btn btn-small" onclick="refreshData()">🔄 Refresh</button>
+                    <button class="btn btn-small" data-action="refresh">🔄 Refresh</button>
                 </div>
                 <div class="table-container">
                     <table class="data-table" id="recentActivityTable">
@@ -492,7 +492,7 @@
     <!-- Approve Modal -->
     <div id="approveModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('approveModal')">&times;</button>
+            <button class="modal-close" data-action="close-modal" data-modal="approveModal">&times;</button>
             <div class="modal-header">
                 <h3 class="modal-title">Approve Incident</h3>
             </div>
@@ -503,7 +503,7 @@
                     <textarea id="approveNotes" rows="3" class="form-control" placeholder="Add any notes about this approval..."></textarea>
                 </div>
                 <div style="text-align: right; margin-top: 1rem;">
-                    <button type="button" class="btn" onclick="closeModal('approveModal')">Cancel</button>
+                    <button type="button" class="btn" data-action="close-modal" data-modal="approveModal">Cancel</button>
                     <button type="submit" class="btn btn-approve">Approve Incident</button>
                 </div>
             </form>
@@ -513,7 +513,7 @@
     <!-- Reject Modal -->
     <div id="rejectModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('rejectModal')">&times;</button>
+            <button class="modal-close" data-action="close-modal" data-modal="rejectModal">&times;</button>
             <div class="modal-header">
                 <h3 class="modal-title">Reject Incident</h3>
             </div>
@@ -524,7 +524,7 @@
                     <textarea id="rejectReason" rows="3" class="form-control" placeholder="Please provide a reason for rejection..." required></textarea>
                 </div>
                 <div style="text-align: right; margin-top: 1rem;">
-                    <button type="button" class="btn" onclick="closeModal('rejectModal')">Cancel</button>
+                    <button type="button" class="btn" data-action="close-modal" data-modal="rejectModal">Cancel</button>
                     <button type="submit" class="btn btn-reject">Reject Incident</button>
                 </div>
             </form>
@@ -534,7 +534,7 @@
     <!-- Ban User Modal -->
     <div id="banModal" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('banModal')">&times;</button>
+            <button class="modal-close" data-action="close-modal" data-modal="banModal">&times;</button>
             <div class="modal-header">
                 <h3 class="modal-title">Ban User</h3>
             </div>
@@ -549,7 +549,7 @@
                     <input type="number" id="banDuration" class="form-control" placeholder="e.g., 7, 30" min="1">
                 </div>
                 <div style="text-align: right; margin-top: 1rem;">
-                    <button type="button" class="btn" onclick="closeModal('banModal')">Cancel</button>
+                    <button type="button" class="btn" data-action="close-modal" data-modal="banModal">Cancel</button>
                     <button type="submit" class="btn btn-ban">Ban User</button>
                 </div>
             </form>
