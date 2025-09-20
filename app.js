@@ -152,17 +152,30 @@ app.use((req, res, next) => {
     next();
 });
 
-// MongoDB connection
+// MongoDB connection with serverless-friendly error handling
 const connectDB = async () => {
     try {
         // Use MongoDB Atlas connection string from environment variable
         const mongoURI = process.env.MONGODB_URI;
         if (!mongoURI) {
-            throw new Error('MongoDB connection string not found in environment variables');
+            console.error('❌ MONGODB_URI environment variable is not set');
+            console.log('💡 Please set MONGODB_URI in your Vercel environment variables');
+            return false;
         }
+        
+        // Check if already connected
+        if (mongoose.connection.readyState === 1) {
+            console.log('✅ Already connected to MongoDB');
+            return true;
+        }
+        
         await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 10000, // 10 second timeout for serverless
+            maxPoolSize: 10, // Maintain up to 10 socket connections
+            bufferCommands: false, // Disable mongoose buffering
+            bufferMaxEntries: 0 // Disable mongoose buffering
         });
         console.log('✅ Connected to MongoDB Atlas');
         
@@ -175,20 +188,46 @@ const connectDB = async () => {
             // Handle index conflicts gracefully
             if (indexError.code === 85) { // IndexOptionsConflict
                 console.log('⚠️  Index conflict detected. This is usually not critical for application functionality.');
-                console.log('💡 To resolve: Run the database initialization script: node scripts/init-db.js');
             } else {
-                console.error('❌ Index creation error:', indexError.message);
+                console.log('⚠️  Index creation warning:', indexError.message);
             }
             // Don't exit the process, let the app continue running
         }
+        return true;
     } catch (error) {
-        console.error('❌ MongoDB Atlas connection error:', error);
-        process.exit(1);
+        console.error('❌ MongoDB Atlas connection error:', error.message);
+        // Don't exit in serverless environment, just log the error
+        return false;
     }
 };
 
-// Connect to database
-connectDB();
+// Initialize database connection (don't wait for it to avoid blocking)
+let dbConnectionPromise = connectDB();
+
+// Middleware to ensure database connection before handling requests
+app.use(async (req, res, next) => {
+    try {
+        const isConnected = await dbConnectionPromise;
+        if (!isConnected && mongoose.connection.readyState !== 1) {
+            // Try to reconnect
+            dbConnectionPromise = connectDB();
+            const reconnected = await dbConnectionPromise;
+            if (!reconnected) {
+                return res.status(503).json({
+                    error: 'Database connection unavailable. Please try again later.',
+                    status: 'service_unavailable'
+                });
+            }
+        }
+        next();
+    } catch (error) {
+        console.error('Database connection middleware error:', error);
+        res.status(503).json({
+            error: 'Database connection error. Please try again later.',
+            status: 'connection_error'
+        });
+    }
+});
 
 // Routes
 app.use('/api/incidents', incidentRoutes);
@@ -293,73 +332,64 @@ app.use('*', (req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-    console.log('SIGTERM received, shutting down gracefully');
-    
-    try {
-        await mongoose.connection.close();
-        console.log('MongoDB connection closed');
-        process.exit(0);
-    } catch (error) {
-        console.error('Error during shutdown:', error);
-        process.exit(1);
-    }
-});
-
-process.on('SIGINT', async () => {
-    console.log('SIGINT received, shutting down gracefully');
-    
-    try {
-        await mongoose.connection.close();
-        console.log('MongoDB connection closed');
-        process.exit(0);
-    } catch (error) {
-        console.error('Error during shutdown:', error);
-        process.exit(1);
-    }
-});
-
-// Unhandled promise rejection handler
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-// Uncaught exception handler
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    process.exit(1);
-});
-
-const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-    console.log(`🚀 SafeCity server running on port ${PORT}`);
-    console.log(`📱 Dashboard: http://localhost:${PORT}`);
-    console.log(`🚨 Report incidents: http://localhost:${PORT}/report`);
-    console.log(`🔍 Safety analysis: http://localhost:${PORT}/safety`);
-    console.log(`📡 API docs: http://localhost:${PORT}/api`);
-});
-
-// Handle server errors
-server.on('error', (error) => {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-    
-    const bind = typeof PORT === 'string' ? 'Pipe ' + PORT : 'Port ' + PORT;
-    
-    switch (error.code) {
-    case 'EACCES':
-        console.error(`${bind} requires elevated privileges`);
-        process.exit(1);
-        break;
-    case 'EADDRINUSE':
-        console.error(`${bind} is already in use`);
-        process.exit(1);
-        break;
-    default:
-        throw error;
-    }
-});
-
+// Export the Express app for serverless deployment
 module.exports = app;
+
+// Start server only if not in serverless environment
+if (process.env.NODE_ENV !== 'production' && require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    const server = app.listen(PORT, () => {
+        console.log(`🚀 SafeCity server running on port ${PORT}`);
+        console.log(`📱 Dashboard: http://localhost:${PORT}`);
+        console.log(`🚨 Report incidents: http://localhost:${PORT}/report`);
+        console.log(`🔍 Safety analysis: http://localhost:${PORT}/safety`);
+        console.log(`📡 API docs: http://localhost:${PORT}/api`);
+    });
+
+    // Handle server errors in local development
+    server.on('error', (error) => {
+        if (error.syscall !== 'listen') {
+            throw error;
+        }
+        
+        const bind = typeof PORT === 'string' ? 'Pipe ' + PORT : 'Port ' + PORT;
+        
+        switch (error.code) {
+        case 'EACCES':
+            console.error(`${bind} requires elevated privileges`);
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(`${bind} is already in use`);
+            process.exit(1);
+            break;
+        default:
+            throw error;
+        }
+    });
+
+    // Graceful shutdown for local development
+    process.on('SIGTERM', async () => {
+        console.log('SIGTERM received, shutting down gracefully');
+        try {
+            await mongoose.connection.close();
+            console.log('MongoDB connection closed');
+            process.exit(0);
+        } catch (error) {
+            console.error('Error during shutdown:', error);
+            process.exit(1);
+        }
+    });
+
+    process.on('SIGINT', async () => {
+        console.log('SIGINT received, shutting down gracefully');
+        try {
+            await mongoose.connection.close();
+            console.log('MongoDB connection closed');
+            process.exit(0);
+        } catch (error) {
+            console.error('Error during shutdown:', error);
+            process.exit(1);
+        }
+    });
+}
