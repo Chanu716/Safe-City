@@ -481,6 +481,43 @@ router.get('/incidents/recent', auth, requireModerator, async (req, res) => {
     }
 });
 
+// POST /api/admin/users/:id/unlock - Unlock a temporarily locked user account
+router.post('/users/:id/unlock', auth, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
 
+        // Reset login attempts and unlock
+        user.loginAttempts = 0;
+        user.lockUntil = undefined;
+        await user.save();
+
+        console.log(`🔓 Account unlocked by admin for user: ${user.email}`);
+
+        res.json({
+            success: true,
+            message: `Account unlocked for ${user.email}`,
+            user: {
+                id: user._id,
+                email: user.email,
+                name: `${user.firstName} ${user.lastName}`,
+                isLocked: false,
+                loginAttempts: 0
+            }
+        });
+
+    } catch (error) {
+        console.error('Unlock user error:', error);
+        res.status(500).json({
+            error: 'Failed to unlock user account'
+        });
+    }
+});
 
 module.exports = router;

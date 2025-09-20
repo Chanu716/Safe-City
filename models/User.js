@@ -128,7 +128,14 @@ const userSchema = new mongoose.Schema({
         type: Date
     },
     
-
+    loginAttempts: {
+        type: Number,
+        default: 0
+    },
+    
+    lockUntil: {
+        type: Date
+    },
     
     // Social login providers
     googleId: String,
@@ -205,7 +212,10 @@ userSchema.virtual('fullName').get(function() {
     return `${this.firstName} ${this.lastName}`;
 });
 
-
+// Virtual to check if account is locked
+userSchema.virtual('isLocked').get(function() {
+    return !!(this.lockUntil && this.lockUntil > Date.now());
+});
 
 // Pre-save middleware to hash password
 userSchema.pre('save', async function(next) {
@@ -228,10 +238,26 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// Instance method to handle failed login attempts
+userSchema.methods.handleFailedLogin = async function() {
+    // Increment login attempts
+    this.loginAttempts += 1;
+    
+    // Lock account after 5 failed attempts for 2 hours
+    if (this.loginAttempts >= 5) {
+        this.lockUntil = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
+    }
+    
+    return this.save();
+};
+
 // Instance method to handle successful login
 userSchema.methods.handleSuccessfulLogin = async function() {
-    // Update last login time
+    // Reset login attempts and lock
+    this.loginAttempts = 0;
+    this.lockUntil = undefined;
     this.lastLogin = new Date();
+    
     return this.save();
 };
 
@@ -336,6 +362,8 @@ userSchema.methods.exportData = function() {
     delete userData.verificationToken;
     delete userData.resetPasswordToken;
     delete userData.resetPasswordExpires;
+    delete userData.loginAttempts;
+    delete userData.lockUntil;
     
     return {
         userData,
@@ -353,6 +381,8 @@ userSchema.set('toJSON', {
         delete ret.resetPasswordToken;
         delete ret.resetPasswordExpires;
         delete ret.__v;
+        delete ret.loginAttempts;
+        delete ret.lockUntil;
         return ret;
     }
 });

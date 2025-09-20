@@ -14,7 +14,8 @@
     "init-db": "node scripts/init-db.js",
     "reset-indexes": "node scripts/init-db.js",
     "grant-admin": "node scripts/grant-admin.js",
-    "update-consent": "node scripts/update-user-consent.js"
+    "update-consent": "node scripts/update-user-consent.js",
+    "unlock-account": "node unlock-account.js"
   },
   "keywords": [
     "safety",

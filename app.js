@@ -4,8 +4,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const app = express();
@@ -14,71 +12,6 @@ const app = express();
 const incidentRoutes = require('./routes/incidents');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
-
-// Import security middleware
-const { sanitizeInput } = require('./middleware/security');
-
-// Security middleware - Apply first
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com", "https://maps.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https://maps.googleapis.com"],
-            frameSrc: ["'none'"],
-            objectSrc: ["'none'"],
-            mediaSrc: ["'self'"],
-            workerSrc: ["'none'"],
-            childSrc: ["'none'"],
-            formAction: ["'self'"],
-            upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
-        }
-    },
-    crossOriginEmbedderPolicy: false, // Needed for Google Maps
-    hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true
-    }
-}));
-
-// Rate limiting - More user-friendly limits
-const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // limit each IP to 200 requests per windowMs (increased from 100)
-    message: {
-        error: 'Too many requests from this IP, please try again later.'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 25, // limit each IP to 25 auth requests per windowMs (increased from 10)
-    message: {
-        error: 'Too many authentication attempts, please try again later.'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-// Apply rate limiting
-app.use(generalLimiter);
-app.use('/api/auth', authLimiter);
-
-// Force HTTPS in production
-if (process.env.NODE_ENV === 'production') {
-    app.use((req, res, next) => {
-        if (req.header('x-forwarded-proto') !== 'https') {
-            return res.redirect(301, `https://${req.header('host')}${req.url}`);
-        }
-        next();
-    });
-}
 
 // Middleware
 app.use(cors({
@@ -102,36 +35,14 @@ app.use(cors({
     credentials: true
 }));
 
-app.use(express.json({ 
-    limit: '1mb', // Reduced from 10mb for security
-    verify: (req, res, buf) => {
-        // Store raw body for webhook verification if needed
-        req.rawBody = buf;
-    }
-}));
-app.use(express.urlencoded({ 
-    extended: true, 
-    limit: '1mb' // Reduced from 10mb for security
-}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Additional security headers (helmet already covers most, but these are extra)
+// Security headers
 app.use((req, res, next) => {
-    // Remove server information
-    res.removeHeader('X-Powered-By');
-    
-    // Prevent clickjacking
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
-    
-    // Additional security headers
-    res.setHeader('X-Download-Options', 'noopen');
-    res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
-    // Secure cookies in production
-    if (process.env.NODE_ENV === 'production') {
-        res.setHeader('Set-Cookie', 'HttpOnly;Secure;SameSite=strict');
-    }
-    
+    res.setHeader('X-XSS-Protection', '1; mode=block');
     next();
 });
 
@@ -142,9 +53,6 @@ app.get('/', (req, res) => {
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Input sanitization middleware - apply globally
-app.use(sanitizeInput);
 
 // Request logging middleware
 app.use((req, res, next) => {
