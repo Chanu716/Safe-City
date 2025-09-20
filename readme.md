@@ -91,6 +91,22 @@ The app will load the key from `.env` and inject it into the frontend.
 
 ---
 
+## 🔄 Database Migration
+
+If you encounter index conflicts during development or deployment, SafeCity includes automated migration tools:
+
+```bash
+# Resolve database index conflicts
+npm run init-db
+
+# Or use the alternative command
+npm run reset-indexes
+```
+
+For detailed migration instructions, see [MIGRATION.md](./MIGRATION.md).
+
+---
+
 ## 🧠 Tech Stack
 
 | Layer | Tech |

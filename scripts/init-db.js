@@ -54,9 +54,21 @@ async function initializeDatabase() {
         console.log('✅ Current indexes:', newIndexes.map(idx => idx.name));
 
         console.log('🎉 Database initialization completed successfully');
+        console.log('');
+        console.log('✅ Migration Summary:');
+        console.log(`   • MongoDB connection: successful`);
+        console.log(`   • Conflicting indexes removed: ${locationIndexNames.length}`);
+        console.log(`   • New indexes created: ${newIndexes.length}`);
+        console.log(`   • Database ready for application use`);
 
     } catch (error) {
         console.error('❌ Database initialization error:', error);
+        console.log('');
+        console.log('🔧 Troubleshooting tips:');
+        console.log('   • Check your MONGODB_URI in .env file');
+        console.log('   • Ensure MongoDB cluster is accessible');
+        console.log('   • Verify database user has proper permissions');
+        console.log('   • See MIGRATION.md for detailed instructions');
         throw error;
     } finally {
         await mongoose.connection.close();

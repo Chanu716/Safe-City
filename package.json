@@ -44,6 +44,24 @@
     "prettier": "^3.0.0",
     "supertest": "^6.3.3"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [],
+    "collectCoverageFrom": [
+      "scripts/**/*.js",
+      "models/**/*.js",
+      "routes/**/*.js",
+      "app.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 50,
+        "lines": 50,
+        "statements": 50
+      }
+    }
+  },
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
