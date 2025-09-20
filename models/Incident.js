@@ -89,10 +89,55 @@ const incidentSchema = new mongoose.Schema({
         default: 'anonymous'
     },
     
+    // Enhanced reporter information for production
+    reporter: {
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        anonymous: {
+            type: Boolean,
+            default: false
+        },
+        consented: {
+            type: Boolean,
+            default: false
+        }
+    },
+    
     // For verification purposes
     verified: {
         type: Boolean,
         default: false
+    },
+    
+    // Moderation and validation
+    moderation: {
+        status: {
+            type: String,
+            enum: ['pending', 'approved', 'rejected', 'flagged'],
+            default: 'pending'
+        },
+        moderatedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        moderatedAt: Date,
+        moderationNotes: String,
+        flaggedReason: String
+    },
+    
+    // Privacy controls
+    privacy: {
+        anonymized: {
+            type: Boolean,
+            default: false
+        },
+        anonymizedAt: Date,
+        canBeShared: {
+            type: Boolean,
+            default: true
+        }
     },
     
     // Additional metadata
@@ -114,6 +159,8 @@ incidentSchema.index({ timestamp: -1 }); // For sorting by most recent
 incidentSchema.index({ category: 1 }); // For filtering by category
 incidentSchema.index({ latitude: 1, longitude: 1 }); // For geospatial queries
 incidentSchema.index({ status: 1 }); // For filtering by status
+incidentSchema.index({ 'reporter.userId': 1 }); // For user incident queries
+incidentSchema.index({ 'moderation.status': 1 }); // For moderation queries
 
 // Create a 2dsphere index for geospatial queries
 incidentSchema.index({ location: '2dsphere' });
@@ -176,6 +223,53 @@ incidentSchema.statics.getCategoryStats = function() {
             $sort: { count: -1 }
         }
     ]);
+};
+
+// Instance method to anonymize incident data
+incidentSchema.methods.anonymizeData = async function() {
+    if (!this.privacy.anonymized) {
+        this.description = `[Incident report anonymized - ${this.category} category]`;
+        this.reporter.userId = null;
+        this.reporter.anonymous = true;
+        this.privacy.anonymized = true;
+        this.privacy.anonymizedAt = new Date();
+        
+        // Remove any potentially identifying metadata
+        if (this.metadata) {
+            this.metadata.userAgent = undefined;
+            this.metadata.ipAddress = undefined;
+        }
+        
+        return this.save();
+    }
+    return this;
+};
+
+// Instance method to approve incident (for moderation)
+incidentSchema.methods.approve = async function(moderatorId, notes = '') {
+    this.moderation.status = 'approved';
+    this.moderation.moderatedBy = moderatorId;
+    this.moderation.moderatedAt = new Date();
+    this.moderation.moderationNotes = notes;
+    this.verified = true;
+    
+    return this.save();
+};
+
+// Instance method to reject incident (for moderation)
+incidentSchema.methods.reject = async function(moderatorId, reason) {
+    this.moderation.status = 'rejected';
+    this.moderation.moderatedBy = moderatorId;
+    this.moderation.moderatedAt = new Date();
+    this.moderation.moderationNotes = reason;
+    this.verified = false;
+    
+    return this.save();
+};
+
+// Static method to find incidents pending moderation
+incidentSchema.statics.findPendingModeration = function() {
+    return this.find({ 'moderation.status': 'pending' }).sort({ timestamp: 1 });
 };
 
 // Pre-update middleware
