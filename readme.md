@@ -65,23 +65,20 @@ SafeCity is a comprehensive full-stack web application designed for **real-time 
 ---
 
 
-## 🚦 Google Maps API Key Setup
+## �️ Complete Setup Guide
 
-This project uses Google Maps for location selection and autocomplete. You must create your own Google Maps API key:
+For detailed setup instructions including Google Maps API, MongoDB Atlas, Gmail integration, and all required configurations, see our comprehensive setup guide:
 
-1. Go to https://console.cloud.google.com/
-2. Create a new project (or use an existing one).
-3. Enable the Google Maps JavaScript API and Places API.
-4. Create an API key and restrict it to your domain (recommended).
-5. Add your API key to a `.env` file in the project root:
+**📖 [SETUP.md](./SETUP.md) - Complete Configuration Guide**
 
-   ```env
-   GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
-   ```
-
-**Never commit your API key to public repositories.**
-
-The app will load the key from `.env` and inject it into the frontend.
+This guide covers:
+- 🗄️ MongoDB Atlas database setup
+- 🗺️ Google Maps API configuration  
+- 📧 Gmail email service setup
+- 🔐 JWT and security configuration
+- 🚀 First-time application setup
+- 🔧 Development vs Production settings
+- 🚨 Troubleshooting common issues
 
 ### 📌 Dashboard Page (`dashboard.html`)
 - Entry point of the app
@@ -185,10 +182,7 @@ The app will load the key from `.env` and inject it into the frontend.
 ### Admin Setup
 
 1. **Create your account** through the signup page
-2. **Grant admin privileges**
-   ```bash
-   node scripts/grant-admin.js
-   ```
+2. **Grant admin privileges** - See [SETUP.md](./SETUP.md) for detailed instructions
 3. **Access admin dashboard** at `http://localhost:3000/admin.html`
 
 ## 🔧 Configuration
@@ -218,40 +212,27 @@ NODE_ENV=development
 PORT=3000
 ```
 
-### Google Maps Setup
+### Detailed Service Configuration
 
-1. Enable **Maps JavaScript API** and **Places API**
-2. Create and restrict your API key
-3. Create a **Map ID** for advanced markers
-4. Update `public/js/maps-config.js` with your Map ID
+For step-by-step instructions on configuring all external services:
 
-See [MAPS_SETUP.md](./MAPS_SETUP.md) for detailed instructions.
+**📖 [SETUP.md](./SETUP.md) - Complete Setup Guide**
 
-### Email Setup
-
-1. Enable **2-Factor Authentication** on Gmail
-2. Generate **App Password** for SafeCity
-3. Update environment variables
-
-See [SETUP_EMAIL.md](./SETUP_EMAIL.md) for detailed instructions.
+Includes detailed instructions for:
+- **Google Maps API**: Enable APIs, create keys, set restrictions, configure Map IDs
+- **Gmail Integration**: 2FA setup, App Password generation, email testing
+- **MongoDB Atlas**: Account creation, cluster setup, user management, network configuration
+- **Security Configuration**: JWT secrets, environment variables, production settings
 
 ## 🔄 Database Migration & Maintenance
 
 ```bash
 # Resolve database index conflicts
 npm run init-db
-
-# Grant admin privileges
-node scripts/grant-admin.js
-
-# Unlock temporarily locked accounts
-node unlock-account.js user@example.com
-
-# Update user consent (GDPR compliance)
-node scripts/update-user-consent.js
 ```
 
-For detailed migration instructions, see [MIGRATION.md](./MIGRATION.md).
+**For detailed setup and configuration**: [SETUP.md](./SETUP.md)  
+**For database migration instructions**: [MIGRATION.md](./MIGRATION.md)
 
 ---
 
@@ -337,18 +318,14 @@ Safe-City/
 │   └── consent.js               # GDPR compliance middleware
 ├── 📁 utils/                     # Utility modules
 │   └── emailService.js          # Email sending functionality
-├── 📁 scripts/                   # Admin & maintenance scripts
-│   ├── grant-admin.js           # Grant admin privileges
-│   ├── update-user-consent.js   # GDPR consent updates
-│   └── README.md                # Scripts documentation
+├── 📁 scripts/                   # Database initialization scripts
+│   └── init-db.js               # Database setup and migration
 ├── 📁 tests/                     # Test files
 │   └── migration.test.js        # Database migration tests
 ├── 📄 app.js                     # Express server setup
-├── 📄 unlock-account.js          # Account unlock utility
 ├── 📄 .env.example               # Environment template
+├── 📄 SETUP.md                   # Complete setup guide
 ├── 📄 MIGRATION.md               # Database migration guide
-├── 📄 MAPS_SETUP.md              # Google Maps setup guide
-├── 📄 SETUP_EMAIL.md             # Email configuration guide
 └── 📄 README.md                  # This file
 ```
 
