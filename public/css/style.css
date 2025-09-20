@@ -61,6 +61,23 @@ header {
     color: #667eea;
 }
 
+.nav-links a.active {
+    color: #667eea;
+    font-weight: 600;
+    position: relative;
+}
+
+.nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 1px;
+}
+
 /* Dashboard Styles */
 .dashboard {
     text-align: center;
@@ -859,5 +876,181 @@ header {
     
     .login-prompt-content p {
         font-size: 0.9rem;
+    }
+}
+
+/* Forgot Password Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 450px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.modal-header h2 {
+    color: #333;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-modal {
+    font-size: 30px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.forgot-step {
+    margin-bottom: 20px;
+}
+
+.forgot-step p {
+    margin-bottom: 20px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.forgot-step .form-group {
+    margin-bottom: 20px;
+}
+
+.forgot-step input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.forgot-step input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.forgot-step label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.forgot-step .btn {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.forgot-step .btn-secondary {
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+.forgot-step .btn-secondary:hover {
+    background: #5a6268;
+    border-color: #545b62;
+}
+
+.status-message {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.status-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f1aeb5;
+}
+
+.status-message.info {
+    background: #cce7ff;
+    color: #004085;
+    border: 1px solid #b8daff;
+}
+
+/* Forgot password link styling */
+#forgot-password-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+#forgot-password-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* OTP input specific styling */
+#forgot-otp {
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 8px;
+    font-weight: bold;
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 20px;
+        margin: 20px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.3rem;
     }
 }

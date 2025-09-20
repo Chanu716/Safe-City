@@ -6,16 +6,18 @@ let selectedLocation = null;
 
 // Initialize the map
 function initMap() {
-    // Default location (you can change this to your preferred default)
-    const defaultLocation = { lat: 40.7128, lng: -74.0060 }; // New York City
+    // Use configuration from maps-config.js
+    const config = window.MAPS_CONFIG || {};
+    const defaultLocation = config.defaultLocation || { lat: 40.7128, lng: -74.0060 };
     
-    map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 13,
+    const mapOptions = {
+        zoom: config.defaultZoom || 13,
         center: defaultLocation,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false
-    });
+        ...config.mapOptions,
+        mapId: config.mapId || 'DEMO_MAP_ID' // Will use your Map ID when configured
+    };
+    
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
     // Add click listener to map
     map.addListener('click', (event) => {
@@ -59,16 +61,28 @@ function getCurrentLocation() {
 function placeMarker(location) {
     // Remove existing marker
     if (marker) {
-        marker.setMap(null);
+        marker.map = null;
     }
     
-    // Create new marker
-    marker = new google.maps.Marker({
-        position: location,
-        map: map,
-        draggable: true,
-        animation: google.maps.Animation.DROP
-    });
+    // Create new marker using AdvancedMarkerElement if available and Map ID is configured
+    const config = window.MAPS_CONFIG || {};
+    const hasValidMapId = config.mapId && config.mapId !== 'YOUR_MAP_ID_HERE' && config.mapId !== 'DEMO_MAP_ID';
+    
+    if (google.maps.marker && google.maps.marker.AdvancedMarkerElement && hasValidMapId) {
+        marker = new google.maps.marker.AdvancedMarkerElement({
+            position: location,
+            map: map,
+            gmpDraggable: true
+        });
+    } else {
+        // Fallback to legacy Marker for compatibility
+        marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            draggable: true,
+            animation: google.maps.Animation.DROP
+        });
+    }
     
     // Store selected location
     selectedLocation = {
@@ -80,11 +94,14 @@ function placeMarker(location) {
     document.getElementById('selected-location').innerHTML = 
         `📍 Selected: ${selectedLocation.lat.toFixed(6)}, ${selectedLocation.lng.toFixed(6)}`;
     
-    // Add drag listener
+    // Add drag listener (works for both AdvancedMarkerElement and classic Marker)
     marker.addListener('dragend', (event) => {
+        // For AdvancedMarkerElement, position is directly accessible
+        // For classic Marker, use event.latLng
+        const position = event.latLng || marker.position;
         selectedLocation = {
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
+            lat: position.lat(),
+            lng: position.lng()
         };
         document.getElementById('selected-location').innerHTML = 
             `📍 Selected: ${selectedLocation.lat.toFixed(6)}, ${selectedLocation.lng.toFixed(6)}`;
@@ -107,6 +124,47 @@ async function submitReport(event) {
     // Check if user is logged in
     if (!isLoggedIn()) {
         showAlert('Please log in to report incidents', 'danger');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Get the current auth token
+    const currentAuthToken = localStorage.getItem('safecity_token');
+
+    
+    if (!currentAuthToken) {
+        showAlert('Authentication token not found. Please log in again.', 'danger');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Basic token validation
+    if (currentAuthToken.split('.').length !== 3) {
+        console.log('Invalid token format - clearing and redirecting to login');
+        localStorage.removeItem('safecity_token');
+        localStorage.removeItem('safecity_user');
+        showAlert('Invalid authentication token. Please log in again.', 'danger');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Check if token is expired
+    try {
+        const tokenPayload = JSON.parse(atob(currentAuthToken.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (tokenPayload.exp && tokenPayload.exp < currentTime) {
+            console.log('Token expired - clearing and redirecting to login');
+            localStorage.removeItem('safecity_token');
+            localStorage.removeItem('safecity_user');
+            showAlert('Your session has expired. Please log in again.', 'warning');
+            window.location.href = 'login.html';
+            return;
+        }
+    } catch (tokenParseError) {
+        console.log('Error parsing token - clearing and redirecting to login');
+        localStorage.removeItem('safecity_token');
+        localStorage.removeItem('safecity_user');
+        showAlert('Invalid authentication token. Please log in again.', 'danger');
         window.location.href = 'login.html';
         return;
     }
@@ -156,11 +214,15 @@ async function submitReport(event) {
         submitBtn.disabled = true;
         
         // Send to backend
-        const response = await fetch('https://safe-city-8gxz.onrender.com/api/incidents', {
+        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:3000/api/incidents'
+            : 'https://safe-city-8gxz.onrender.com/api/incidents';
+            
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                'Authorization': `Bearer ${currentAuthToken}`
             },
             body: JSON.stringify(formData)
         });
@@ -182,7 +244,26 @@ async function submitReport(event) {
             document.getElementById('selected-location').innerHTML = '';
         } else {
             const result = await response.json();
-            throw new Error(result.error || 'Failed to submit report');
+            console.error('API Error:', result);
+            console.error('Response status:', response.status);
+            console.error('Response headers:', response.headers);
+            
+            // Handle authentication errors specifically
+            if (response.status === 401) {
+                console.log('Authentication error - clearing stored credentials');
+                localStorage.removeItem('safecity_token');
+                localStorage.removeItem('safecity_user');
+                if (typeof clearAuthData === 'function') {
+                    clearAuthData();
+                }
+                showAlert('Your session has expired. Please log in again.', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
+            }
+            
+            throw new Error(result.error || `Failed to submit report (Status: ${response.status})`);
         }
         
     } catch (error) {
@@ -272,4 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     const timestamp = now.toLocaleString();
     document.getElementById('timestamp-display').innerHTML = `⏰ ${timestamp}`;
+    
+
 });

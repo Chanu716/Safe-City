@@ -17,14 +17,19 @@ const adminRoutes = require('./routes/admin');
 app.use(cors({
     origin: function (origin, callback) {
         // Allow localhost for development
-        if (!origin || origin.startsWith('http://localhost')) {
+        if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
             return callback(null, true);
         }
         // Allow any Vercel subdomain
         if (/^https:\/\/([a-zA-Z0-9-]+)\.vercel\.app$/.test(origin)) {
             return callback(null, true);
         }
-        // Block other origins
+        // Allow file:// protocol for local development
+        if (origin === null || origin === 'null') {
+            return callback(null, true);
+        }
+        // Log blocked origins for debugging
+        console.log('CORS blocked origin:', origin);
         callback(new Error('Not allowed by CORS'));
     },
     credentials: true

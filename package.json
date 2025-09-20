@@ -35,7 +35,8 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^7.5.0"
+    "mongoose": "^7.5.0",
+    "nodemailer": "^7.0.6"
   },
   "devDependencies": {
     "eslint": "^8.45.0",
@@ -68,10 +69,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/safecity.git"
+    "url": "https://github.com/Chanu716/safecity.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/safecity/issues"
+    "url": "https://github.com/Chanu716/safecity/issues"
   },
-  "homepage": "https://github.com/yourusername/safecity#readme"
+  "homepage": "https://github.com/Chanu716/safecity#readme"
 }

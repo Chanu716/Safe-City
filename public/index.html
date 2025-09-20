@@ -53,7 +53,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Location Selection</label>
+                    <label for="location-btn">Location Selection</label>
                     <button type="button" id="location-btn" class="btn" onclick="useCurrentLocation()">📍 Use Current Location</button>
                     <p style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">
                         Click the button above to use your current location, or click on the map below to select a location.
@@ -79,21 +79,21 @@
                 <h4 style="color: #007bff; margin-bottom: 15px;">📋 Privacy & Consent</h4>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                    <label for="anonymousReport" style="display: flex; align-items: flex-start; cursor: pointer;">
                         <input type="checkbox" id="anonymousReport" style="margin-right: 10px; margin-top: 4px;">
                         <span><strong>Submit anonymously</strong> - Your report will not be linked to your account</span>
                     </label>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                    <label for="dataConsent" style="display: flex; align-items: flex-start; cursor: pointer;">
                         <input type="checkbox" id="dataConsent" required style="margin-right: 10px; margin-top: 4px;">
                         <span>I consent to the collection and processing of this incident data for community safety purposes. <a href="privacy.html" target="_blank">Privacy Policy</a></span>
                     </label>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                    <label for="accuracyConfirm" style="display: flex; align-items: flex-start; cursor: pointer;">
                         <input type="checkbox" id="accuracyConfirm" required style="margin-right: 10px; margin-top: 4px;">
                         <span>I confirm that the information provided is accurate to the best of my knowledge</span>
                     </label>
@@ -137,17 +137,22 @@
 
     <!-- Scripts -->
     <script src="js/auth.js"></script>
+    <script src="js/maps-config.js"></script>
     <script src="js/report.js"></script>
     
     <!-- Google Maps API loaded dynamically -->
     <script>
     // Fetch Google Maps API key from backend and load Maps script
-    fetch('https://safe-city-8gxz.onrender.com/api/google-api-key')
+    const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000'
+        : 'https://safe-city-8gxz.onrender.com';
+        
+    fetch(`${apiBaseUrl}/api/google-api-key`)
       .then(response => response.json())
       .then(data => {
         if (data.apiKey) {
           const script = document.createElement('script');
-          script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap`;
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap&loading=async&libraries=marker`;
           script.async = true;
           script.defer = true;
           document.body.appendChild(script);

@@ -147,7 +147,7 @@ router.post('/incidents/:id/flag', auth, requireModerator, async (req, res) => {
 router.get('/users', auth, requireAdmin, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = parseInt(req.query.limit) || 20; //pagination
         const skip = (page - 1) * limit;
         const search = req.query.search;
 
@@ -280,6 +280,117 @@ router.post('/users/:id/unban', auth, requireAdmin, async (req, res) => {
     }
 });
 
+// PUT /api/admin/users/:id/role - Update user role (admin only)
+router.put('/users/:id/role', auth, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        // Validate role
+        const validRoles = ['user', 'moderator', 'admin'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).json({
+                error: 'Invalid role. Must be: user, moderator, or admin'
+            });
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        // Don't allow users to change their own role
+        if (user._id.toString() === req.user.userId) {
+            return res.status(403).json({
+                error: 'Cannot change your own role'
+            });
+        }
+
+        const oldRole = user.role || 'user';
+        user.role = role;
+        await user.save();
+
+        res.json({
+            message: `User role updated from ${oldRole} to ${role}`,
+            user: {
+                id: user._id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error('Update user role error:', error);
+        res.status(500).json({
+            error: 'Failed to update user role'
+        });
+    }
+});
+
+// POST /api/admin/grant-admin - Grant admin privileges to specific emails (super admin only)
+router.post('/grant-admin', auth, requireAdmin, async (req, res) => {
+    try {
+        const adminEmails = [
+            'karrichanikya@gmail.com',
+            'charmiseera07@gmail.com'
+        ];
+
+        const results = [];
+
+        for (const email of adminEmails) {
+            try {
+                const user = await User.findOne({ email: email.toLowerCase() });
+                
+                if (!user) {
+                    results.push({
+                        email,
+                        success: false,
+                        message: 'User not found - make sure they have created an account first'
+                    });
+                    continue;
+                }
+
+                const oldRole = user.role || 'user';
+                user.role = 'admin';
+                await user.save();
+
+                results.push({
+                    email,
+                    success: true,
+                    message: `Role updated from ${oldRole} to admin`,
+                    user: {
+                        name: `${user.firstName} ${user.lastName}`,
+                        email: user.email,
+                        role: user.role
+                    }
+                });
+
+            } catch (userError) {
+                results.push({
+                    email,
+                    success: false,
+                    message: userError.message
+                });
+            }
+        }
+
+        res.json({
+            message: 'Admin privilege granting completed',
+            results
+        });
+
+    } catch (error) {
+        console.error('Grant admin error:', error);
+        res.status(500).json({
+            error: 'Failed to grant admin privileges'
+        });
+    }
+});
+
 // GET /api/admin/stats - Get admin statistics
 router.get('/stats', auth, requireModerator, async (req, res) => {
     try {
@@ -322,6 +433,89 @@ router.get('/stats', auth, requireModerator, async (req, res) => {
         console.error('Get admin stats error:', error);
         res.status(500).json({
             error: 'Failed to retrieve statistics'
+        });
+    }
+});
+
+// GET /api/admin/incidents/recent - Get recent incidents for admin dashboard
+router.get('/incidents/recent', auth, requireModerator, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        
+        // Get recent incidents sorted by creation date
+        const incidents = await Incident.find()
+            .populate('reporter.userId', 'firstName lastName email')
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .select('title category location timestamp moderation createdAt reporter status severity');
+
+        // Format the response for admin dashboard
+        const formattedIncidents = incidents.map(incident => ({
+            _id: incident._id,
+            title: incident.title,
+            category: incident.category,
+            location: incident.location,
+            timestamp: incident.timestamp,
+            createdAt: incident.createdAt,
+            status: incident.moderation?.status || incident.status || 'Reported',
+            severity: incident.severity || 'Medium',
+            reporter: {
+                name: incident.reporter?.userId ? 
+                    `${incident.reporter.userId.firstName} ${incident.reporter.userId.lastName}` : 
+                    'Anonymous',
+                email: incident.reporter?.userId?.email || 'N/A'
+            }
+        }));
+
+        res.json({
+            success: true,
+            incidents: formattedIncidents,
+            total: formattedIncidents.length
+        });
+
+    } catch (error) {
+        console.error('Get recent incidents error:', error);
+        res.status(500).json({
+            error: 'Failed to retrieve recent incidents'
+        });
+    }
+});
+
+// POST /api/admin/users/:id/unlock - Unlock a temporarily locked user account
+router.post('/users/:id/unlock', auth, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found'
+            });
+        }
+
+        // Reset login attempts and unlock
+        user.loginAttempts = 0;
+        user.lockUntil = undefined;
+        await user.save();
+
+        console.log(`🔓 Account unlocked by admin for user: ${user.email}`);
+
+        res.json({
+            success: true,
+            message: `Account unlocked for ${user.email}`,
+            user: {
+                id: user._id,
+                email: user.email,
+                name: `${user.firstName} ${user.lastName}`,
+                isLocked: false,
+                loginAttempts: 0
+            }
+        });
+
+    } catch (error) {
+        console.error('Unlock user error:', error);
+        res.status(500).json({
+            error: 'Failed to unlock user account'
         });
     }
 });

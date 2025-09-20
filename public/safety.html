@@ -8,11 +8,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body>
-    <!-- Educational Notice Banner -->
-    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
-        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This safety analysis is for demonstration purposes. Data shown is simulated.
-    </div>
-    
     <header>
         <div class="header-content">
             <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
@@ -137,15 +132,20 @@
     <!-- Google Maps JavaScript API -->
     <!-- Custom JavaScript -->
     <script src="js/auth.js"></script>
+    <script src="js/maps-config.js"></script>
     <script src="js/safety.js"></script>
     <!-- Google Maps JavaScript API -->
     <script>
-  fetch('https://safe-city-8gxz.onrender.com/api/google-api-key')
+  const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://localhost:3000'
+      : 'https://safe-city-8gxz.onrender.com';
+      
+  fetch(`${apiBaseUrl}/api/google-api-key`)
     .then(response => response.json())
     .then(data => {
       if (data.apiKey) {
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&callback=initMap&loading=async&libraries=marker`;
         script.async = true;
         script.defer = true;
         document.body.appendChild(script);

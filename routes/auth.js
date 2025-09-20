@@ -69,6 +69,14 @@ router.post('/signup', async (req, res) => {
             location: location?.trim(),
             preferences: {
                 newsletter: newsletter === 'on' || newsletter === true
+            },
+            // Set consent for development (in production, this should be explicit)
+            consent: {
+                dataCollection: true,
+                dataProcessing: true,
+                marketing: newsletter === 'on' || newsletter === true,
+                consentDate: new Date(),
+                consentVersion: '1.0'
             }
         });
 
@@ -337,7 +345,7 @@ router.post('/change-password', auth, async (req, res) => {
     }
 });
 
-// POST /api/auth/forgot-password - Request password reset
+// POST /api/auth/forgot-password - Request password reset with OTP
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -351,21 +359,31 @@ router.post('/forgot-password', async (req, res) => {
         const user = await User.findByEmail(email);
         
         if (!user) {
-            // Don't reveal if email exists for security
+            // Don't reveal if email exists for security, but still return success
             return res.json({
-                message: 'If an account with that email exists, a password reset link has been sent'
+                success: true,
+                message: 'If an account with that email exists, a verification code has been sent'
             });
         }
 
-        // Generate reset token
-        const resetToken = user.generatePasswordResetToken();
+        // Generate OTP
+        const otp = user.generatePasswordResetOTP();
         await user.save();
 
-        // In a real application, you would send reset email here
-        console.log(`Password reset token for ${email}: ${resetToken}`);
+        // Send OTP email
+        const { sendOTPEmail } = require('../utils/emailService');
+        const emailResult = await sendOTPEmail(email, otp, user.firstName);
+        
+        if (!emailResult.success) {
+            console.error('Failed to send OTP email:', emailResult.error);
+            // Don't expose email sending errors to user for security
+        }
+
+        console.log(`🔐 Password reset OTP for ${email}: ${otp} (expires in 10 minutes)`);
 
         res.json({
-            message: 'If an account with that email exists, a password reset link has been sent'
+            success: true,
+            message: 'If an account with that email exists, a verification code has been sent'
         });
 
     } catch (error) {
@@ -376,14 +394,64 @@ router.post('/forgot-password', async (req, res) => {
     }
 });
 
-// POST /api/auth/reset-password - Reset password with token
+// POST /api/auth/verify-otp - Verify password reset OTP
+router.post('/verify-otp', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                error: 'Please provide email and verification code'
+            });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase() })
+            .select('+resetOTP +resetOTPExpires');
+        
+        if (!user) {
+            return res.status(400).json({
+                error: 'Invalid verification code or email'
+            });
+        }
+
+        // Debug logging
+        console.log(`🔍 OTP Verification Debug:
+        - Email: ${email}
+        - Provided OTP: ${otp}
+        - Stored OTP: ${user.resetOTP}
+        - OTP Expires: ${user.resetOTPExpires}
+        - Current Time: ${Date.now()}
+        - Is Expired: ${user.resetOTPExpires <= Date.now()}`);
+
+        // Verify OTP
+        if (!user.verifyPasswordResetOTP(otp)) {
+            return res.status(400).json({
+                error: 'Invalid or expired verification code'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Verification code confirmed. You can now reset your password.',
+            verified: true
+        });
+
+    } catch (error) {
+        console.error('OTP verification error:', error);
+        res.status(500).json({
+            error: 'Failed to verify code'
+        });
+    }
+});
+
+// POST /api/auth/reset-password - Reset password with OTP (updated)
 router.post('/reset-password', async (req, res) => {
     try {
-        const { token, newPassword, confirmPassword } = req.body;
+        const { email, otp, newPassword, confirmPassword } = req.body;
 
-        if (!token || !newPassword || !confirmPassword) {
+        if (!email || !otp || !newPassword || !confirmPassword) {
             return res.status(400).json({
-                error: 'Please provide reset token, new password, and confirmation'
+                error: 'Please provide email, verification code, new password, and confirmation'
             });
         }
 
@@ -393,30 +461,39 @@ router.post('/reset-password', async (req, res) => {
             });
         }
 
-        if (newPassword.length < 8) {
+        if (newPassword.length < 6) {
             return res.status(400).json({
-                error: 'Password must be at least 8 characters long'
+                error: 'Password must be at least 6 characters long'
             });
         }
 
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() }
-        });
+        const user = await User.findOne({ email: email.toLowerCase() })
+            .select('+resetOTP +resetOTPExpires +password');
 
         if (!user) {
             return res.status(400).json({
-                error: 'Password reset token is invalid or has expired'
+                error: 'Invalid email or verification code'
             });
         }
 
-        // Update password and clear reset fields
+        // Verify OTP one more time
+        if (!user.verifyPasswordResetOTP(otp)) {
+            console.log(`❌ Password reset failed - Invalid OTP for ${email}`);
+            return res.status(400).json({
+                error: 'Invalid or expired verification code'
+            });
+        }
+
+        // Update password and clear OTP fields
         user.password = newPassword;
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
+        user.resetOTP = undefined;
+        user.resetOTPExpires = undefined;
         await user.save();
 
+        console.log(`✅ Password reset successful for: ${email}`);
+
         res.json({
+            success: true,
             message: 'Password reset successful. You can now login with your new password.'
         });
 

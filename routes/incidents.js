@@ -48,10 +48,17 @@ router.get('/', optionalAuth, async (req, res) => {
 // POST /api/incidents - Create new incident (requires authentication and consent)
 router.post('/', auth, requireConsent, checkDeletionStatus, async (req, res) => {
     try {
+        console.log('📝 Report submission attempt:', {
+            body: req.body,
+            user: req.user,
+            headers: req.headers
+        });
+        
         const { title, category, description, latitude, longitude, anonymous = false } = req.body;
         
         // Validate required fields
         if (!title || !category || !description || !latitude || !longitude) {
+            console.log('❌ Missing required fields:', { title, category, description, latitude, longitude });
             return res.status(400).json({ 
                 error: 'Missing required fields: title, category, description, latitude, longitude' 
             });
@@ -65,12 +72,26 @@ router.post('/', auth, requireConsent, checkDeletionStatus, async (req, res) => 
         }
         
         // Create new incident with enhanced fields
-        const incident = new Incident({
+        const parsedLatitude = parseFloat(latitude);
+        const parsedLongitude = parseFloat(longitude);
+        
+        console.log('💾 Creating incident with coordinates:', {
+            latitude: parsedLatitude,
+            longitude: parsedLongitude,
+            location: [parsedLongitude, parsedLatitude]
+        });
+        
+        const incidentData = {
             title: title.trim(),
             category,
             description: description.trim(),
-            latitude: parseFloat(latitude),
-            longitude: parseFloat(longitude),
+            latitude: parsedLatitude,
+            longitude: parsedLongitude,
+            // GeoJSON location field for geospatial queries
+            location: {
+                type: 'Point',
+                coordinates: [parsedLongitude, parsedLatitude] // Note: GeoJSON uses [longitude, latitude] order
+            },
             timestamp: new Date(),
             reporter: {
                 userId: anonymous ? undefined : req.user.userId,
@@ -82,7 +103,11 @@ router.post('/', auth, requireConsent, checkDeletionStatus, async (req, res) => 
                 ipAddress: req.ip,
                 source: 'web'
             }
-        });
+        };
+        
+        console.log('📝 Incident data before creation:', JSON.stringify(incidentData, null, 2));
+        
+        const incident = new Incident(incidentData);
         
         const savedIncident = await incident.save();
         
@@ -104,9 +129,6 @@ router.post('/', auth, requireConsent, checkDeletionStatus, async (req, res) => 
                 status: savedIncident.moderation.status
             }
         });
-            incident: savedIncident
-        });
-        
     } catch (error) {
         console.error('Error creating incident:', error);
         res.status(500).json({ error: 'Failed to create incident' });
@@ -135,8 +157,16 @@ router.get('/nearby', async (req, res) => {
             });
         }
         
-        // Get all incidents (in a real app, you'd use geospatial queries)
-        const allIncidents = await Incident.find().sort({ timestamp: -1 });
+        // Only show approved incidents to non-admin users
+        let query = { 'moderation.status': 'approved' };
+        
+        // If user is admin or moderator, show all incidents
+        if (req.user && (req.user.role === 'admin' || req.user.role === 'moderator')) {
+            query = {};
+        }
+        
+        // Get filtered incidents (in a real app, you'd use geospatial queries)
+        const allIncidents = await Incident.find(query).sort({ timestamp: -1 });
         
         // Filter incidents within radius
         const nearbyIncidents = allIncidents.filter(incident => {
@@ -173,10 +203,19 @@ router.get('/recent', async (req, res) => {
         // Default to last 5 minutes if no 'since' parameter
         const sinceDate = since ? new Date(since) : new Date(Date.now() - 5 * 60 * 1000);
         
+        // Only show approved incidents to non-admin users
+        let query = { 
+            timestamp: { $gte: sinceDate },
+            'moderation.status': 'approved' 
+        };
+        
+        // If user is admin or moderator, show all incidents including pending/rejected
+        if (req.user && (req.user.role === 'admin' || req.user.role === 'moderator')) {
+            query = { timestamp: { $gte: sinceDate } };
+        }
+        
         // Get recent incidents
-        const recentIncidents = await Incident.find({
-            timestamp: { $gte: sinceDate }
-        }).sort({ timestamp: -1 });
+        const recentIncidents = await Incident.find(query).sort({ timestamp: -1 });
         
         // Filter incidents within radius
         const nearbyRecentIncidents = recentIncidents.filter(incident => {

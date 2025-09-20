@@ -10,15 +10,18 @@ let alertInterval;
 
 // Initialize the map
 function initMap() {
-    const defaultLocation = { lat: 40.7128, lng: -74.0060 };
+    // Use configuration from maps-config.js
+    const config = window.MAPS_CONFIG || {};
+    const defaultLocation = config.defaultLocation || { lat: 40.7128, lng: -74.0060 };
     
-    map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 13,
+    const mapOptions = {
+        zoom: config.defaultZoom || 13,
         center: defaultLocation,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false
-    });
+        ...config.mapOptions,
+        mapId: config.mapId || 'DEMO_MAP_ID' // Will use your Map ID when configured
+    };
+    
+    map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
     infoWindow = new google.maps.InfoWindow();
 
@@ -47,23 +50,43 @@ function getCurrentLocation() {
                 
                 // Add user marker
                 if (userMarker) {
-                    userMarker.setMap(null);
+                    userMarker.map = null;
                 }
                 
-                userMarker = new google.maps.Marker({
-                    position: currentLocation,
-                    map: map,
-                    title: 'Your Location',
-                    icon: {
-                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="8" fill="#4285F4"/>
-                                <circle cx="12" cy="12" r="3" fill="white"/>
-                            </svg>
-                        `),
-                        scaledSize: new google.maps.Size(24, 24)
-                    }
-                });
+                // Create user marker with AdvancedMarkerElement if available
+                if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+                    // Create a custom pin element for user location
+                    const pinElement = document.createElement('div');
+                    pinElement.innerHTML = `
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="8" fill="#4285F4"/>
+                            <circle cx="12" cy="12" r="3" fill="white"/>
+                        </svg>
+                    `;
+                    
+                    userMarker = new google.maps.marker.AdvancedMarkerElement({
+                        position: currentLocation,
+                        map: map,
+                        title: 'Your Location',
+                        content: pinElement
+                    });
+                } else {
+                    // Fallback to legacy Marker
+                    userMarker = new google.maps.Marker({
+                        position: currentLocation,
+                        map: map,
+                        title: 'Your Location',
+                        icon: {
+                            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="8" fill="#4285F4"/>
+                                    <circle cx="12" cy="12" r="3" fill="white"/>
+                                </svg>
+                            `),
+                            scaledSize: new google.maps.Size(24, 24)
+                        }
+                    });
+                }
                 
                 document.getElementById('location-status').innerHTML = 
                     '<div class="alert alert-success">📍 Location tracking active</div>';
@@ -88,8 +111,13 @@ async function analyzeLocation(latLng) {
     };
     
     try {
+        // Determine API base URL (localhost vs production)
+        const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? `http://localhost:3000`
+            : 'https://safe-city-8gxz.onrender.com';
+        
         // Fetch incidents near this location
-        const response = await fetch(`https://safe-city-8gxz.onrender.com/api/incidents/nearby?lat=${location.lat}&lng=${location.lng}&radius=1000`);
+        const response = await fetch(`${apiBaseUrl}/api/incidents/nearby?lat=${location.lat}&lng=${location.lng}&radius=1000`);
         const incidents = await response.json();
         
         // Calculate safety level
@@ -214,20 +242,42 @@ async function loadNearbyIncidents() {
         const incidents = await response.json();
         
         // Clear existing markers
-        incidentMarkers.forEach(marker => marker.setMap(null));
+        incidentMarkers.forEach(marker => {
+            if (marker.map) {
+                marker.map = null;
+            } else {
+                marker.setMap(null);
+            }
+        });
         incidentMarkers = [];
         
         // Add incident markers
         incidents.forEach(incident => {
-            const marker = new google.maps.Marker({
-                position: { lat: incident.latitude, lng: incident.longitude },
-                map: map,
-                title: incident.title,
-                icon: {
-                    url: getIncidentIcon(incident.category),
-                    scaledSize: new google.maps.Size(32, 32)
-                }
-            });
+            let marker;
+            
+            if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+                // Create custom pin element for incident
+                const pinElement = document.createElement('div');
+                pinElement.innerHTML = `<img src="${getIncidentIcon(incident.category)}" style="width: 32px; height: 32px;">`;
+                
+                marker = new google.maps.marker.AdvancedMarkerElement({
+                    position: { lat: incident.latitude, lng: incident.longitude },
+                    map: map,
+                    title: incident.title,
+                    content: pinElement
+                });
+            } else {
+                // Fallback to legacy Marker
+                marker = new google.maps.Marker({
+                    position: { lat: incident.latitude, lng: incident.longitude },
+                    map: map,
+                    title: incident.title,
+                    icon: {
+                        url: getIncidentIcon(incident.category),
+                        scaledSize: new google.maps.Size(32, 32)
+                    }
+                });
+            }
             
             const infoContent = `
                 <div>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SafeCity</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <style>
+        /* Admin-specific styles */
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #fff 60%, #e0e7ff 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .admin-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .section-badge {
+            background: #667eea;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-flagged {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .btn-flag {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-flag:hover {
+            background: #e0a800;
+        }
+
+        .btn-ban {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-ban:hover {
+            background: #5a6268;
+        }
+
+        .btn-unban {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-unban:hover {
+            background: #138496;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .full-width-section {
+            grid-column: 1 / -1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .admin-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
+            <nav>
+                <ul class="nav-links" id="navMenu">
+                    <!-- Navigation will be loaded dynamically -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Admin Header -->
+        <div class="admin-header">
+            <h1>🔧 Admin Dashboard</h1>
+            <p>Manage incidents, users, and monitor community safety</p>
+            <div id="admin-user-info"></div>
+            
+            <!-- Moderation Guide -->
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 8px; text-align: left;">
+                <h4>📋 Moderation Guide:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+                    <div>
+                        <strong>✓ Approve:</strong> Makes incident public on maps
+                    </div>
+                    <div>
+                        <strong>✗ Reject:</strong> Removes fake/spam reports
+                    </div>
+                    <div>
+                        <strong>⚠ Flag:</strong> Marks for further review
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="admin-stats" id="statsCards">
+            <!-- Stats will be loaded dynamically -->
+        </div>
+
+        <!-- Admin Sections -->
+        <div class="admin-sections">
+            <!-- Pending Incidents Section -->
+            <div class="admin-section">
+                <div class="section-header">
+                    <h2 class="section-title">🚨 Pending Incidents</h2>
+                    <span class="section-badge" id="pendingCount">0</span>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="pendingIncidentsTable">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Reporter</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingIncidentsBody">
+                            <!-- Incidents will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="incidentPagination"></div>
+            </div>
+
+            <!-- User Management Section -->
+            <div class="admin-section">
+                <div class="section-header">
+                    <h2 class="section-title">👥 User Management</h2>
+                    <span class="section-badge" id="userCount">0</span>
+                </div>
+                <input type="text" class="search-box" id="userSearch" placeholder="Search users by name or email...">
+                <div class="table-container">
+                    <table class="data-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="userPagination"></div>
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="admin-section full-width-section">
+                <div class="section-header">
+                    <h2 class="section-title">📊 Recent Activity</h2>
+                    <button class="btn btn-small" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="recentActivityTable">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Reporter</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentActivityBody">
+                            <!-- Recent activity will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Approve Modal -->
+    <div id="approveModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('approveModal')">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title">Approve Incident</h3>
+            </div>
+            <form id="approveForm">
+                <input type="hidden" id="approveIncidentId">
+                <div class="form-group">
+                    <label for="approveNotes">Approval Notes (Optional)</label>
+                    <textarea id="approveNotes" rows="3" class="form-control" placeholder="Add any notes about this approval..."></textarea>
+                </div>
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button type="button" class="btn" onclick="closeModal('approveModal')">Cancel</button>
+                    <button type="submit" class="btn btn-approve">Approve Incident</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('rejectModal')">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title">Reject Incident</h3>
+            </div>
+            <form id="rejectForm">
+                <input type="hidden" id="rejectIncidentId">
+                <div class="form-group">
+                    <label for="rejectReason">Rejection Reason *</label>
+                    <textarea id="rejectReason" rows="3" class="form-control" placeholder="Please provide a reason for rejection..." required></textarea>
+                </div>
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button type="button" class="btn" onclick="closeModal('rejectModal')">Cancel</button>
+                    <button type="submit" class="btn btn-reject">Reject Incident</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ban User Modal -->
+    <div id="banModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('banModal')">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title">Ban User</h3>
+            </div>
+            <form id="banForm">
+                <input type="hidden" id="banUserId">
+                <div class="form-group">
+                    <label for="banReason">Ban Reason *</label>
+                    <textarea id="banReason" rows="3" class="form-control" placeholder="Please provide a reason for banning this user..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="banDuration">Ban Duration (days) - Leave empty for permanent</label>
+                    <input type="number" id="banDuration" class="form-control" placeholder="e.g., 7, 30" min="1">
+                </div>
+                <div style="text-align: right; margin-top: 1rem;">
+                    <button type="button" class="btn" onclick="closeModal('banModal')">Cancel</button>
+                    <button type="submit" class="btn btn-ban">Ban User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>

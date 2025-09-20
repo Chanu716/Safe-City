@@ -43,7 +43,11 @@ async function signUp(userData) {
     try {
         showLoading('signup-btn', 'Creating Account...');
         
-        const response = await fetch('https://safe-city-8gxz.onrender.com/api/auth/signup', {
+        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:3000/api/auth/signup'
+            : 'https://safe-city-8gxz.onrender.com/api/auth/signup';
+            
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -88,7 +92,11 @@ async function login(credentials) {
     try {
         showLoading('login-btn', 'Signing In...');
         
-        const response = await fetch('https://safe-city-8gxz.onrender.com/api/auth/login', {
+        const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:3000/api/auth/login'
+            : 'https://safe-city-8gxz.onrender.com/api/auth/login';
+            
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -123,7 +131,11 @@ async function logout() {
     try {
         // Call backend logout endpoint
         if (authToken) {
-            await fetch('https://safe-city-8gxz.onrender.com/api/auth/logout', {
+            const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://localhost:3000/api/auth/logout'
+                : 'https://safe-city-8gxz.onrender.com/api/auth/logout';
+                
+            await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${authToken}`
@@ -361,7 +373,9 @@ async function authenticatedFetch(url, options = {}) {
     }
     
     // If relative API path, prefix with backend URL
-    const apiPrefix = 'https://safe-city-8gxz.onrender.com';
+    const apiPrefix = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000'
+        : 'https://safe-city-8gxz.onrender.com';
     const fullUrl = url.startsWith('/api/') ? apiPrefix + url : url;
     const response = await fetch(fullUrl, options);
     
@@ -390,23 +404,28 @@ function updateNavigation() {
         
         // Add navigation items based on current page (exclude current page from nav)
         if (currentPage !== 'dashboard.html') {
-            navItems.push('<li><a href="dashboard.html">Dashboard</a></li>');
+            navItems.push('<li><a href="dashboard.html">🏠 Dashboard</a></li>');
         }
         if (currentPage !== 'index.html') {
-            navItems.push('<li><a href="index.html">Report Incident</a></li>');
+            navItems.push('<li><a href="index.html">📍 Report Incident</a></li>');
         }
         if (currentPage !== 'safety.html') {
-            navItems.push('<li><a href="safety.html">Safety Analysis</a></li>');
+            navItems.push('<li><a href="safety.html">🔍 Analyze Safety</a></li>');
         }
-        // Profile link removed - only available through user dropdown menu
+        
+        // Add admin link for admin and moderator users
+        if (user.role && (user.role === 'admin' || user.role === 'moderator')) {
+            const adminClass = currentPage === 'admin.html' ? ' class="active"' : '';
+            navItems.push(`<li><a href="admin.html"${adminClass}>🔧 Admin</a></li>`);
+        }
         
         // Add user menu
         navItems.push(`
             <li class="user-menu">
                 <a href="#" onclick="toggleUserMenu()">👤 ${user.firstName || user.email}</a>
                 <div class="user-dropdown" id="user-dropdown">
-                    <a href="profile.html">Profile</a>
-                    <a href="#" onclick="logout()">Logout</a>
+                    <a href="profile.html">👤 Profile</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
                 </div>
             </li>
         `);

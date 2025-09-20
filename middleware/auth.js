@@ -7,10 +7,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'safecity_development_secret_key_ch
 
 const auth = async (req, res, next) => {
     try {
+        console.log('🔐 Auth middleware - checking token for:', req.path);
+        
         // Get token from header
         const authHeader = req.header('Authorization');
         
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            console.log('❌ No valid authorization header:', authHeader);
             return res.status(401).json({
                 error: 'Access denied. No valid token provided.'
             });
@@ -18,18 +21,24 @@ const auth = async (req, res, next) => {
 
         const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
+        console.log('🔍 Token received:', token.substring(0, 20) + '...');
+        
         try {
             // Verify token
             const decoded = jwt.verify(token, JWT_SECRET);
+            console.log('✅ Token decoded successfully, userId:', decoded.userId);
             
             // Get user from database
             const user = await User.findById(decoded.userId);
             
             if (!user) {
+                console.log('❌ User not found in database for userId:', decoded.userId);
                 return res.status(401).json({
                     error: 'Access denied. User not found.'
                 });
             }
+            
+            console.log('✅ User found:', user.email, 'isActive:', user.isActive, 'isBanned:', user.isBanned);
 
             // Check if user is active
             if (!user.isActive) {
@@ -56,6 +65,7 @@ const auth = async (req, res, next) => {
             next();
             
         } catch (jwtError) {
+            console.log('❌ JWT Error:', jwtError.name, jwtError.message);
             if (jwtError.name === 'TokenExpiredError') {
                 return res.status(401).json({
                     error: 'Access denied. Token has expired.'

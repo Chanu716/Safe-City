@@ -72,6 +72,17 @@ const userSchema = new mongoose.Schema({
         select: false
     },
     
+    // OTP for password reset
+    resetOTP: {
+        type: String,
+        select: false
+    },
+    
+    resetOTPExpires: {
+        type: Date,
+        select: false
+    },
+    
     preferences: {
         emailNotifications: {
             type: Boolean,
@@ -263,6 +274,19 @@ userSchema.methods.generatePasswordResetToken = function() {
     this.resetPasswordToken = crypto.randomBytes(32).toString('hex');
     this.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
     return this.resetPasswordToken;
+};
+
+// Instance method to generate password reset OTP
+userSchema.methods.generatePasswordResetOTP = function() {
+    // Generate 6-digit OTP
+    this.resetOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    this.resetOTPExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    return this.resetOTP;
+};
+
+// Instance method to verify password reset OTP
+userSchema.methods.verifyPasswordResetOTP = function(otp) {
+    return this.resetOTP === otp && this.resetOTPExpires > Date.now();
 };
 
 // Instance method to add points for user actions
