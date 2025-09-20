@@ -104,9 +104,30 @@ function useCurrentLocation() {
 async function submitReport(event) {
     event.preventDefault();
     
+    // Check if user is logged in
+    if (!isLoggedIn()) {
+        showAlert('Please log in to report incidents', 'danger');
+        window.location.href = 'login.html';
+        return;
+    }
+    
     // Check if location is selected
     if (!selectedLocation) {
         showAlert('Please select a location on the map', 'danger');
+        return;
+    }
+    
+    // Validate consent checkboxes
+    const dataConsent = document.getElementById('dataConsent');
+    const accuracyConfirm = document.getElementById('accuracyConfirm');
+    
+    if (!dataConsent.checked) {
+        showAlert('You must consent to data processing to submit a report', 'danger');
+        return;
+    }
+    
+    if (!accuracyConfirm.checked) {
+        showAlert('You must confirm the accuracy of your report', 'danger');
         return;
     }
     
@@ -117,7 +138,8 @@ async function submitReport(event) {
         description: document.getElementById('description').value,
         latitude: selectedLocation.lat,
         longitude: selectedLocation.lng,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        anonymous: document.getElementById('anonymousReport').checked
     };
     
     // Validate form
@@ -145,17 +167,22 @@ async function submitReport(event) {
         
         if (response.ok) {
             showPopup('Report submitted successfully!');
-            showAlert('Incident reported successfully! Thank you for helping keep the community safe.', 'success');
+            showAlert('Incident reported successfully! Your report is being reviewed and will be published after moderation. Thank you for helping keep the community safe.', 'success');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             // Reset form
             document.getElementById('report-form').reset();
+            // Reset consent checkboxes
+            dataConsent.checked = false;
+            accuracyConfirm.checked = false;
+            document.getElementById('anonymousReport').checked = false;
             if (marker) {
                 marker.setMap(null);
             }
             selectedLocation = null;
             document.getElementById('selected-location').innerHTML = '';
         } else {
-            throw new Error('Failed to submit report');
+            const result = await response.json();
+            throw new Error(result.error || 'Failed to submit report');
         }
         
     } catch (error) {

@@ -8,11 +8,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body>
-    <!-- Security Notice Banner -->
-    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
-        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This is a student demonstration website for community safety concepts. No real personal data is stored or processed. All forms are for educational purposes only.
-    </div>
-    
     <header>
         <div class="header-content">
             <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
@@ -79,11 +74,42 @@
                         <small class="form-help">Helps us provide relevant safety information</small>
                     </div>
                     
+                    <!-- Privacy and Consent Section -->
+                    <div class="consent-section" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                        <h4 style="color: #007bff; margin-bottom: 15px;">📋 Privacy & Data Processing Consent</h4>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                                <input type="checkbox" id="dataCollectionConsent" name="dataCollectionConsent" required style="margin-right: 10px; margin-top: 4px;">
+                                <span><strong>Required:</strong> I consent to the collection of my personal data (name, email, location) for account creation and service provision. <a href="privacy.html" target="_blank">Privacy Policy</a></span>
+                            </label>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                                <input type="checkbox" id="dataProcessingConsent" name="dataProcessingConsent" required style="margin-right: 10px; margin-top: 4px;">
+                                <span><strong>Required:</strong> I consent to the processing of my data for community safety features, incident reporting, and account management.</span>
+                            </label>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                                <input type="checkbox" id="marketingConsent" name="marketingConsent" style="margin-right: 10px; margin-top: 4px;">
+                                <span>Optional: I consent to receive safety alerts, updates, and community newsletters via email.</span>
+                            </label>
+                        </div>
+                        
+                        <p style="font-size: 0.9em; color: #666; margin: 0;">
+                            You can withdraw your consent at any time through your profile settings. 
+                            Required consents are necessary for using SafeCity services.
+                        </p>
+                    </div>
+                    
                     <button type="submit" id="signup-btn" class="btn btn-primary auth-btn">
                         🚀 Create Account
                     </button>
                     <div class="form-group">
-                        <small class="form-help" style="color: #007bff; font-weight: bold;">⚠️ EDUCATIONAL DEMO: This form is for demonstration purposes only. No real personal information is collected, stored, or processed.</small>
+                        <small class="form-help">By creating an account, you agree to our <a href="privacy.html">Privacy Policy</a> and the consents above.</small>
                     </div>
                 </form>
                 
@@ -96,9 +122,9 @@
     </div>
 
     <footer style="text-align:center; font-size:0.9em; margin-top:2rem; color:#333; background:#f8f9fa; padding:20px; border-radius:8px;">
-        <p><strong>⚠️ EDUCATIONAL DEMONSTRATION WEBSITE</strong></p>
-        <p>This is a student project created for educational purposes only. It demonstrates web development concepts and community safety features.</p>
-        <p><strong>NO REAL DATA COLLECTION:</strong> This website does not collect, store, or process any real personal information. All forms and features are for demonstration only.</p>
+        <p><strong>🛡️ SafeCity Community Safety Platform</strong></p>
+        <p>Help build a safer community through real-time incident reporting and safety awareness.</p>
+        <p><strong>Your Privacy Matters:</strong> We collect and process data in accordance with our <a href="privacy.html">Privacy Policy</a>. You can manage your data and consent preferences in your account settings.</p>
     </footer>
 
     <script src="js/auth.js"></script>

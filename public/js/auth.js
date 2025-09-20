@@ -228,6 +228,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(this);
             const userData = Object.fromEntries(formData.entries());
             
+            // Add consent data
+            userData.consent = {
+                dataCollection: userData.dataCollectionConsent === 'on',
+                dataProcessing: userData.dataProcessingConsent === 'on',
+                marketing: userData.marketingConsent === 'on'
+            };
+            
+            // Remove checkbox values from main userData object
+            delete userData.dataCollectionConsent;
+            delete userData.dataProcessingConsent;
+            delete userData.marketingConsent;
+            
             // Validate form
             if (!validateSignupForm(userData)) {
                 return;
@@ -282,6 +294,16 @@ function validateSignupForm(data) {
         return false;
     }
     
+    // Consent validation
+    if (!data.consent.dataCollection) {
+        showAlert('You must consent to data collection to create an account.', 'danger');
+        return false;
+    }
+    
+    if (!data.consent.dataProcessing) {
+        showAlert('You must consent to data processing to create an account.', 'danger');
+        return false;
+    }
     
     return true;
 }

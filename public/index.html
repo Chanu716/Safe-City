@@ -10,11 +10,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 </head>
 <body>
-    <!-- Educational Notice Banner -->
-    <div style="background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 14px;">
-        🎓 <strong>EDUCATIONAL PROJECT ONLY</strong> - This is a demonstration website. No real incident data is collected or processed.
-    </div>
-    
     <header>
         <div class="header-content">
             <a href="dashboard.html" class="logo">🛡️ SafeCity</a>
@@ -78,6 +73,37 @@
                     </button>
                 </div>
             </form>
+            
+            <!-- Privacy and Consent Section -->
+            <div class="consent-section" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                <h4 style="color: #007bff; margin-bottom: 15px;">📋 Privacy & Consent</h4>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                        <input type="checkbox" id="anonymousReport" style="margin-right: 10px; margin-top: 4px;">
+                        <span><strong>Submit anonymously</strong> - Your report will not be linked to your account</span>
+                    </label>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                        <input type="checkbox" id="dataConsent" required style="margin-right: 10px; margin-top: 4px;">
+                        <span>I consent to the collection and processing of this incident data for community safety purposes. <a href="privacy.html" target="_blank">Privacy Policy</a></span>
+                    </label>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                        <input type="checkbox" id="accuracyConfirm" required style="margin-right: 10px; margin-top: 4px;">
+                        <span>I confirm that the information provided is accurate to the best of my knowledge</span>
+                    </label>
+                </div>
+                
+                <p style="font-size: 0.9em; color: #666; margin: 0;">
+                    <strong>Note:</strong> All incident reports are reviewed by our moderation team before being published. 
+                    False reports may result in account suspension.
+                </p>
+            </div>
         </div>
         
         <div class="map-container" style="position: relative;">
