@@ -56,10 +56,10 @@ async function initializeDatabase() {
         console.log('🎉 Database initialization completed successfully');
         console.log('');
         console.log('✅ Migration Summary:');
-        console.log(`   • MongoDB connection: successful`);
+        console.log('   • MongoDB connection: successful');
         console.log(`   • Conflicting indexes removed: ${locationIndexNames.length}`);
         console.log(`   • New indexes created: ${newIndexes.length}`);
-        console.log(`   • Database ready for application use`);
+        console.log('   • Database ready for application use');
 
     } catch (error) {
         console.error('❌ Database initialization error:', error);
